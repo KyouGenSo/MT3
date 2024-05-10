@@ -12,9 +12,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int windowY = 720;
 	Novice::Initialize(kWindowTitle, windowX, windowY);
 
-
-
-
+	Vector3 rotate{0.4f, 1.43f, -0.8f};
+	Matrix4x4 rotateMatrixX = MakeRotateMatrixX(rotate.x);
+	Matrix4x4 rotateMatrixY = MakeRotateMatrixY(rotate.y);
+	Matrix4x4 rotateMatrixZ = MakeRotateMatrixZ(rotate.z);
+	Matrix4x4 rotateMatrixXYZ = Multiply(rotateMatrixX, Multiply(rotateMatrixY, rotateMatrixZ));
+	
 
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
@@ -36,7 +39,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-
 		///-------------------///
 		/// ↑更新処理ここまで///
 		///-------------------///
@@ -45,8 +47,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから///
 		///-------------------///
 
-
-
+		Matrix4x4ScreenPrint(0, 0, rotateMatrixX, "RotateMatrixX");
+		Matrix4x4ScreenPrint(0, kRowHeight * 5, rotateMatrixY, "RotateMatrixY");
+		Matrix4x4ScreenPrint(0, kRowHeight * 10, rotateMatrixZ, "RotateMatrixZ");
+		Matrix4x4ScreenPrint(0, kRowHeight * 15, rotateMatrixXYZ, "RotateMatrixXYZ");
 
 
 		///-------------------///
