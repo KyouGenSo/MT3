@@ -12,11 +12,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int windowY = 720;
 	Novice::Initialize(kWindowTitle, windowX, windowY);
 
-	Vector3 scale{1.2f, 0.79f, -2.1f};
-	Vector3 rotate{0.4f, 1.43f, -0.8f};
-	Vector3 translate{2.7f, -4.15f, 1.57f};
-
-	Matrix4x4 worldMatrix = MakeAffineMatrix(scale, rotate, translate);
 
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
@@ -35,18 +30,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから///
 		///-------------------///
 
-
+		Matrix4x4 orthographicMatrix = MakeOrthoMatrix(-160.f, 160.f, 200.0f, 300.0f, 0.0f, 1000.0f);
+		Matrix4x4 perspectiveMatrix = MakePerspectiveMatrix(0.63f, 1.33f, 0.1f, 1000.0f);
+		Matrix4x4 viewportMatrix = MakeViewPortMatrix(100.0f, 200.0f, 600.0f, 300.0f, 0.0f, 1.0f);
 
 
 		///-------------------///
 		/// ↑更新処理ここまで///
 		///-------------------///
 
+
+
 		///-------------------///
 		/// ↓描画処理ここから///
 		///-------------------///
 
-		Matrix4x4ScreenPrint(0, 0, worldMatrix, "worldMatrix");
+		Matrix4x4ScreenPrint(0, 0, orthographicMatrix, "Orthographic Matrix");
+		Matrix4x4ScreenPrint(0, kRowHeight * 5, perspectiveMatrix, "Perspective Matrix");
+		Matrix4x4ScreenPrint(0, kRowHeight * 10, viewportMatrix, "Viewport Matrix");
 
 
 		///-------------------///
