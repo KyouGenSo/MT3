@@ -273,7 +273,7 @@ Matrix4x4 MakeOrthoMatrix(float left, float top, float right, float bottom, floa
 	return result;
 }
 
-Matrix4x4 MakeViewPortMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
+Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
 	Matrix4x4 result;
 
 	result.m[0][0] = width / 2.0f;
