@@ -185,36 +185,16 @@ Matrix4x4 MakeRotateMatrixZ(float angle) {
 	return result;
 }
 
+Matrix4x4 MakeRotateMatrixXYZ(Matrix4x4 mX, Matrix4x4 mY, Matrix4x4 mZ) {
+	Matrix4x4 result = Multiply(mX, Multiply(mY, mZ));
+
+	return result;
+}
+
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
-	Matrix4x4 result = MakeIdentityMatrix();
-
-	float angleX = rotate.x;
-	float angleY = rotate.y;
-	float angleZ = rotate.z;
-
-	float sX = std::sin(angleX);
-	float cX = std::cos(angleX);
-	float sY = std::sin(angleY);
-	float cY = std::cos(angleY);
-	float sZ = std::sin(angleZ);
-	float cZ = std::cos(angleZ);
-
-	result.m[0][0] = scale.x * (cY * cZ);
-	result.m[0][1] = scale.x * (cY * sZ);
-	result.m[0][2] = scale.x * (-sY);
-	result.m[0][3] = 0.0f;
-	result.m[1][0] = scale.y * (sX * sY * cZ - cX * sZ);
-	result.m[1][1] = scale.y * (sX * sY * sZ + cX * cZ);
-	result.m[1][2] = scale.y * (sX * cY);
-	result.m[1][3] = 0.0f;
-	result.m[2][0] = scale.z * (cX * sY * cZ + sX * sZ);
-	result.m[2][1] = scale.z * (cX * sY * sZ - sX * cZ);
-	result.m[2][2] = scale.z * (cX * cY);
-	result.m[2][3] = 0.0f;
-	result.m[3][0] = translate.x;
-	result.m[3][1] = translate.y;
-	result.m[3][2] = translate.z;
-	result.m[3][3] = 1.0f;
+	Matrix4x4 result = MakeScaleMatrix(scale);
+	result = Multiply(result, MakeRotateMatrixXYZ(MakeRotateMatrixX(rotate.x), MakeRotateMatrixY(rotate.y), MakeRotateMatrixZ(rotate.z)));
+	result = Multiply(result, MakeTranslateMatrix(translate));
 
 	return result;
 }
