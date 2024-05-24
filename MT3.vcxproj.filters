@@ -112,6 +112,7 @@
       <Filter>KamataEngine\Include</Filter>
     </ClInclude>
     <ClInclude Include="Vector3Function.h" />
+    <ClInclude Include="3DFunction.h" />
     <ClInclude Include="Matrix4x4Function.h" />
   </ItemGroup>
 </Project>
