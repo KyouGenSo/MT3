@@ -134,7 +134,6 @@ xcopy C:\KamataEngine\DirectXGame\Resources "$(OutDirFullPath)NoviceResources" /
     <ClInclude Include="C:\KamataEngine\DirectXGame\3d\SpotLight.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\2d\DebugText.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\2d\Sprite.h" />
-    <ClInclude Include="C:\KamataEngine\DirectXGame\2d\ImGuiManager.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\3d\Model.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\3d\ViewProjection.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\3d\WorldTransform.h" />

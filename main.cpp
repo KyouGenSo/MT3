@@ -25,6 +25,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 v2(5.0f, 3.0f, 2.0f);
 	Vector3 cross = Cross(v1, v2);
 
+	Sphere sphere(Vector3(0.0f, -0.5f, 0.0f), 0.5f);
+
 	Vector3 localVertices[3] = { Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, -1.0f, 0.0f), Vector3(-1.0f, -1.0f, 0.0f) };
 	Vector3 scale(1.0f, 1.0f, 1.0f);
 	Vector3 rotate(0.0f, 0.0f, 0.0f);
@@ -73,11 +75,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		worldMatrix = MakeAffineMatrix(scale, rotate, translate);
+		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 0.0f), cameraPosition);
+		viewMatrix = Inverse(cameraMatrix);
 		wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 		for (uint32_t i = 0; i < 3; i++) {
-			Vector3 ndcVertex = TransForm(wvpMatrix, localVertices[i]);
-			screenVertices[i] = TransForm(viewportMtrix, ndcVertex);
+			Vector3 ndcVertex = Transform(wvpMatrix, localVertices[i]);
+			screenVertices[i] = Transform(viewportMtrix, ndcVertex);
 		}
 
 
@@ -95,16 +99,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(wvpMatrix, viewportMtrix);
 
-		Novice::DrawTriangle(
-			int(screenVertices[0].x), int(screenVertices[0].y),
-			int(screenVertices[1].x), int(screenVertices[1].y),
-			int(screenVertices[2].x), int(screenVertices[2].y),
-			RED, kFillModeSolid);
+		DrawSphere(sphere, wvpMatrix, viewportMtrix);
+
+		//Novice::DrawTriangle(
+		//	int(screenVertices[0].x), int(screenVertices[0].y),
+		//	int(screenVertices[1].x), int(screenVertices[1].y),
+		//	int(screenVertices[2].x), int(screenVertices[2].y),
+		//	RED, kFillModeSolid);
 
 		ImGui::Begin("Transform");
 		ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 10.0f);
 		ImGui::SliderFloat3("Rotate", &rotate.x, 0.0f, 6.28f);
 		ImGui::SliderFloat3("Translate", &translate.x, -10.0f, 10.0f);
+		ImGui::End();
+
+		ImGui::Begin("Camera");
+		ImGui::DragFloat3("CameraPosition", &cameraPosition.x, -1.0f, 1.0f);
 		ImGui::End();
 
 
