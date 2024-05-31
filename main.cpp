@@ -21,13 +21,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Vector3 v1(3.0f, 0.0f, -2.0f);
-	Vector3 v2(5.0f, 3.0f, 2.0f);
-	Vector3 cross = Cross(v1, v2);
+	Segment segment(Vector3(-2.0f, -1.0f, 0.0f), Vector3(3.0f, 2.0f, 2.0f));
+	Vector3 point(-1.5f, 0.6f, 0.6f);
 
-	Sphere sphere(Vector3(0.0f, -0.5f, 0.0f), 0.5f);
+	Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
+	Vector3 cp = ClosestPoint(point, segment);
 
-	Vector3 localVertices[3] = { Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, -1.0f, 0.0f), Vector3(-1.0f, -1.0f, 0.0f) };
 	Vector3 scale(1.0f, 1.0f, 1.0f);
 	Vector3 rotate(0.0f, 0.0f, 0.0f);
 	Vector3 translate(0.0f, 0.0f, 0.0f);
@@ -40,7 +39,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 projectionMatrix = MakePerspectiveMatrix(0.45f, (float)windowX / (float)windowY, 0.1f, 100.0f);
 	Matrix4x4 wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 	Matrix4x4 viewportMtrix = MakeViewportMatrix(0, 0, float(windowX), float(windowY), 0.0f, 1.0f);
-	Vector3 screenVertices[3];
 
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -56,33 +54,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから///
 		///-------------------///
 
-		if (keys[DIK_W]) {
-			translate.z -= 0.1f;
-		} else if (keys[DIK_S]) {
-			translate.z += 0.1f;
-		}
-
-		if (keys[DIK_A]) {
-			translate.x -= 0.1f;
-		} else if (keys[DIK_D]) {
-			translate.x += 0.1f;
-		}
-
-		//rotate.y += 0.05f;
-
-		if (rotate.y > 6.28f) {
-			rotate.y = 0.0f;
-		}
 
 		worldMatrix = MakeAffineMatrix(scale, rotate, translate);
 		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 0.0f), cameraPosition);
 		viewMatrix = Inverse(cameraMatrix);
 		wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		for (uint32_t i = 0; i < 3; i++) {
-			Vector3 ndcVertex = Transform(wvpMatrix, localVertices[i]);
-			screenVertices[i] = Transform(viewportMtrix, ndcVertex);
-		}
+		Vector3 start = Transform(viewportMtrix, Transform(wvpMatrix, segment.origin));
+		Vector3 end = Transform(viewportMtrix, Transform(wvpMatrix, Add(segment.origin, segment.diff)));
 
 
 		///-------------------///
@@ -95,17 +74,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから///
 		///-------------------///
 
-		Vector3ScreenPrint(0, 0, cross, "Cross");
-
 		DrawGrid(wvpMatrix, viewportMtrix);
 
-		DrawSphere(sphere, wvpMatrix, viewportMtrix);
+		Sphere pointSphere(point, 0.01f);
+		Sphere cpSphere(cp, 0.01f);
+		DrawSphere(pointSphere, wvpMatrix, viewportMtrix, RED);
+		DrawSphere(cpSphere, wvpMatrix, viewportMtrix, BLACK);
 
-		//Novice::DrawTriangle(
-		//	int(screenVertices[0].x), int(screenVertices[0].y),
-		//	int(screenVertices[1].x), int(screenVertices[1].y),
-		//	int(screenVertices[2].x), int(screenVertices[2].y),
-		//	RED, kFillModeSolid);
+		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), WHITE);
 
 		ImGui::Begin("Transform");
 		ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 10.0f);

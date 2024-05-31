@@ -46,7 +46,7 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 	}
 }
 
-void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
+void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	const uint32_t kSubdivision = 20; // 1分割数
 	const float kLonEvery = 2.0f * 3.14159265359f / float(kSubdivision); // 経度の1分割の角度 phi
 	const float kLatEvery = 3.14159265359f / float(kSubdivision); // 緯度の1分割の角度 theta
@@ -80,8 +80,8 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 			screenC = Transform(viewportMatrix, screenC);
 
 			// ライン描画
-			Novice::DrawLine(int(screenA.x), int(screenA.y), int(screenB.x), int(screenB.y), 0xFFFFFFFF);
-			Novice::DrawLine(int(screenB.x), int(screenB.y), int(screenC.x), int(screenC.y), 0xFFFFFFFF);
+			Novice::DrawLine(int(screenA.x), int(screenA.y), int(screenB.x), int(screenB.y), color);
+			Novice::DrawLine(int(screenB.x), int(screenB.y), int(screenC.x), int(screenC.y), color);
 		}
 	}
 }
