@@ -85,3 +85,14 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 		}
 	}
 }
+
+bool IsSphereCollision(const Sphere& sphere1, const Sphere& sphere2) {
+	float distance = float(Length(Subtract(sphere2.center, sphere1.center)));
+
+	if (distance < sphere1.radius + sphere2.radius) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}

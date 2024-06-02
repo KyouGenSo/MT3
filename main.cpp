@@ -21,24 +21,39 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Segment segment(Vector3(-2.0f, -1.0f, 0.0f), Vector3(3.0f, 2.0f, 2.0f));
-	Vector3 point(-1.5f, 0.6f, 0.6f);
+	Sphere sphere1 = { Vector3(-1.5f, 0.0f, 0.0f), 1.0f };
+	Sphere sphere2 = { Vector3(1.5f, 0.0f, 0.0f), 1.0f };
 
-	Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
-	Vector3 cp = ClosestPoint(point, segment);
+	int color1 = WHITE;
+	int color2 = WHITE;
+
+	Vector3 gridScale(1.0f, 1.0f, 1.0f);
+	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
+	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
 
 	Vector3 scale(1.0f, 1.0f, 1.0f);
 	Vector3 rotate(0.0f, 0.0f, 0.0f);
 	Vector3 translate(0.0f, 0.0f, 0.0f);
 
-	Vector3 cameraPosition(0.0f, 0.0f, 10.0f);
+	Vector3 scale2(1.0f, 1.0f, 1.0f);
+	Vector3 rotate2(0.0f, 0.0f, 0.0f);
+	Vector3 translate2(0.0f, 0.0f, 0.0f);
 
-	Matrix4x4 worldMatrix = MakeAffineMatrix(scale, rotate, translate);
+	Vector3 cameraPosition(0.0f, 0.0f, 10.0f);
+	Vector3 cameraRotation(0.0f, 0.0f, 0.0f);
+
 	Matrix4x4 cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 0.0f), cameraPosition);
 	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 	Matrix4x4 projectionMatrix = MakePerspectiveMatrix(0.45f, (float)windowX / (float)windowY, 0.1f, 100.0f);
-	Matrix4x4 wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 	Matrix4x4 viewportMtrix = MakeViewportMatrix(0, 0, float(windowX), float(windowY), 0.0f, 1.0f);
+
+	Matrix4x4 gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
+	Matrix4x4 worldMatrix = MakeAffineMatrix(scale, rotate, translate);
+	Matrix4x4 worldMatrix2 = MakeAffineMatrix(scale2, rotate2, translate2);
+
+	Matrix4x4 gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 wvpMatrix2 = Multiply(worldMatrix2, Multiply(viewMatrix, projectionMatrix));
 
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -54,15 +69,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから///
 		///-------------------///
 
+		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
+		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 		worldMatrix = MakeAffineMatrix(scale, rotate, translate);
-		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 0.0f), cameraPosition);
-		viewMatrix = Inverse(cameraMatrix);
 		wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		Vector3 start = Transform(viewportMtrix, Transform(wvpMatrix, segment.origin));
-		Vector3 end = Transform(viewportMtrix, Transform(wvpMatrix, Add(segment.origin, segment.diff)));
+		worldMatrix2 = MakeAffineMatrix(scale2, rotate2, translate2);
+		wvpMatrix2 = Multiply(worldMatrix2, Multiply(viewMatrix, projectionMatrix));
 
+		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), cameraRotation, cameraPosition);
+		viewMatrix = Inverse(cameraMatrix);
+
+		// 球と球の当たり判定
+		bool isHit = IsSphereCollision(sphere1, sphere2);
+		if (isHit) {
+			color1 = RED;
+		} else {
+			color1 = WHITE;
+		}
 
 		///-------------------///
 		/// ↑更新処理ここまで///
@@ -74,23 +99,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから///
 		///-------------------///
 
-		DrawGrid(wvpMatrix, viewportMtrix);
+		DrawGrid(gridWVPMatrix, viewportMtrix);
 
-		Sphere pointSphere(point, 0.01f);
-		Sphere cpSphere(cp, 0.01f);
-		DrawSphere(pointSphere, wvpMatrix, viewportMtrix, RED);
-		DrawSphere(cpSphere, wvpMatrix, viewportMtrix, BLACK);
+		DrawSphere(sphere1, wvpMatrix, viewportMtrix, color1);
+		DrawSphere(sphere2, wvpMatrix2, viewportMtrix, color2);
 
-		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), WHITE);
 
-		ImGui::Begin("Transform");
+		ImGui::Begin("sphere1");
 		ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 10.0f);
 		ImGui::SliderFloat3("Rotate", &rotate.x, 0.0f, 6.28f);
 		ImGui::SliderFloat3("Translate", &translate.x, -10.0f, 10.0f);
+		ImGui::SliderFloat("Radius", &sphere1.radius, 0.0f, 10.0f);
+		ImGui::SliderFloat3("center", &sphere1.center.x, -10.0f, 10.0f);
 		ImGui::End();
 
 		ImGui::Begin("Camera");
-		ImGui::DragFloat3("CameraPosition", &cameraPosition.x, -1.0f, 1.0f);
+		ImGui::DragFloat3("CameraPosition", &cameraPosition.x, -0.01f, 1.0f);
+		ImGui::DragFloat3("CameraRotation", &cameraRotation.x, -0.01f, 1.0f);
 		ImGui::End();
 
 
