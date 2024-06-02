@@ -69,6 +69,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから///
 		///-------------------///
 
+		if (keys[DIK_W]) {
+			cameraPosition.z -= 0.1f;
+		}
+
+		if (keys[DIK_S]) {
+			cameraPosition.z += 0.1f;
+		}
+
+		if (keys[DIK_A]) {
+			cameraPosition.x -= 0.1f;
+		}
+
+		if (keys[DIK_D]) {
+			cameraPosition.x += 0.1f;
+		}
+
+		if (keys[DIK_SPACE]) {
+			cameraPosition.y += 0.1f;
+		}
+
+		if (keys[DIK_LSHIFT]) {
+			cameraPosition.y -= 0.1f;
+		}
+
+		if (keys[DIK_UP]) {
+			cameraRotation.x += 0.01f;
+		}
+
+		if (keys[DIK_DOWN]) {
+			cameraRotation.x -= 0.01f;
+		}
+
+		if (keys[DIK_LEFT]) {
+			cameraRotation.y += 0.01f;
+		}
+
+		if (keys[DIK_RIGHT]) {
+			cameraRotation.y -= 0.01f;
+		}
+
+
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
@@ -106,18 +147,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		ImGui::Begin("sphere1");
-		ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 10.0f);
-		ImGui::SliderFloat3("Rotate", &rotate.x, 0.0f, 6.28f);
-		ImGui::SliderFloat3("Translate", &translate.x, -10.0f, 10.0f);
-		ImGui::SliderFloat("Radius", &sphere1.radius, 0.0f, 10.0f);
-		ImGui::SliderFloat3("center", &sphere1.center.x, -10.0f, 10.0f);
+		ImGui::DragFloat3("Scale", &scale.x, -0.01f, 1.0f, 10.0f);
+		ImGui::DragFloat3("Rotate", &rotate.x, -0.01f, 0.0f, 6.28f);
+		ImGui::DragFloat3("Translate", &translate.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Center", &sphere1.center.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("Radius", &sphere1.radius, -0.01f, 0.0f, 50.0f);
 		ImGui::End();
 
-		ImGui::Begin("Camera");
-		ImGui::DragFloat3("CameraPosition", &cameraPosition.x, -0.01f, 1.0f);
-		ImGui::DragFloat3("CameraRotation", &cameraRotation.x, -0.01f, 1.0f);
+		ImGui::Begin("sphere2");
+		ImGui::DragFloat3("Scale", &scale2.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Rotate", &rotate2.x, -0.01f, 0.0f, 6.28f);
+		ImGui::DragFloat3("Translate", &translate2.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Center", &sphere2.center.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("Radius", &sphere2.radius, -0.01f, 0.0f, 50.0f);
 		ImGui::End();
-
 
 		///-------------------///
 		/// ↑描画処理ここまで///
