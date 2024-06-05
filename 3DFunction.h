@@ -10,6 +10,11 @@ struct Sphere {
 	float radius;
 };
 
+struct Plane {
+	Vector3 normal;
+	float distance;
+};
+
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys) {
 
 	if (keys[DIK_W]) {
@@ -51,6 +56,13 @@ void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveS
 	if (keys[DIK_RIGHT]) {
 		cameraRotation.y -= rotateSpeed;
 	}
+}
+
+Vector3 Perpendicular(const Vector3& v) {
+	if (v.x != 0.0f && v.y != 0.0f) {
+		return Vector3(-v.y, v.x, 0.0f);
+	}
+	return Vector3(0.0f, -v.z, v.y);
 }
 
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
@@ -129,6 +141,27 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 	}
 }
 
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 center = Multiply(plane.normal, plane.distance);
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal));
+	perpendiculars[1] = { -perpendiculars[0].x, -perpendiculars[0].y, -perpendiculars[0].z };
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]);
+	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z };
+
+	Vector3 points[4];
+	for (int i = 0; i < 4; i++) {
+		Vector3 extend = Multiply(perpendiculars[i], 2.0f);
+		Vector3 point = Add(center, extend);
+		points[i] = Transform(viewportMatrix, Transform(viewProjectionMatrix, point));
+	}
+
+	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[2].x), int(points[2].y), color);
+	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[1].x), int(points[1].y), color);
+	Novice::DrawLine(int(points[1].x), int(points[1].y), int(points[3].x), int(points[3].y), color);
+	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[0].x), int(points[0].y), color);
+}
+
 bool IsSphereCollision(const Sphere& sphere1, const Sphere& sphere2) {
 	float distance = float(Length(Subtract(sphere2.center, sphere1.center)));
 
@@ -136,6 +169,16 @@ bool IsSphereCollision(const Sphere& sphere1, const Sphere& sphere2) {
 		return true;
 	}
 	else {
+		return false;
+	}
+}
+
+bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
+	float distance = Dot(sphere.center, plane.normal) - plane.distance; 
+
+	if (distance < sphere.radius) {
+		return true;
+	} else {
 		return false;
 	}
 }

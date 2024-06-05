@@ -21,8 +21,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Sphere sphere1 = { Vector3(-1.5f, 0.0f, 0.0f), 1.0f };
-	Sphere sphere2 = { Vector3(1.5f, 0.0f, 0.0f), 1.0f };
+	Sphere sphere = { Vector3(-1.5f, 0.0f, 0.0f), 1.0f };
+	Plane plane = { Vector3(0.0f, 1.0f, 0.0f), 0.0f };
 
 	int color1 = WHITE;
 	int color2 = WHITE;
@@ -31,13 +31,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
 	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
 
-	Vector3 scale(1.0f, 1.0f, 1.0f);
-	Vector3 rotate(0.0f, 0.0f, 0.0f);
-	Vector3 translate(0.0f, 0.0f, 0.0f);
+	Vector3 sphereScale(1.0f, 1.0f, 1.0f);
+	Vector3 sphereRotate(0.0f, 0.0f, 0.0f);
+	Vector3 sphereTranslate(0.0f, 0.0f, 0.0f);
 
-	Vector3 scale2(1.0f, 1.0f, 1.0f);
-	Vector3 rotate2(0.0f, 0.0f, 0.0f);
-	Vector3 translate2(0.0f, 0.0f, 0.0f);
+	Vector3 PlaneScale(1.0f, 1.0f, 1.0f);
+	Vector3 PlaneRotate(0.0f, 0.0f, 0.0f);
+	Vector3 PlaneTranslate(0.0f, 0.0f, 0.0f);
 
 	Vector3 cameraPosition(0.0f, 0.0f, 10.0f);
 	Vector3 cameraRotation(0.0f, 0.0f, 0.0f);
@@ -48,12 +48,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 viewportMtrix = MakeViewportMatrix(0, 0, float(windowX), float(windowY), 0.0f, 1.0f);
 
 	Matrix4x4 gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
-	Matrix4x4 worldMatrix = MakeAffineMatrix(scale, rotate, translate);
-	Matrix4x4 worldMatrix2 = MakeAffineMatrix(scale2, rotate2, translate2);
-
 	Matrix4x4 gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
-	Matrix4x4 wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-	Matrix4x4 wvpMatrix2 = Multiply(worldMatrix2, Multiply(viewMatrix, projectionMatrix));
+
+	Matrix4x4 sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
+	Matrix4x4 sphereWvpMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+
+	Matrix4x4 PlaneWorldMatrix = MakeAffineMatrix(PlaneScale, PlaneRotate, PlaneTranslate);
+	Matrix4x4 PlaneWvpMatrix = Multiply(PlaneWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -74,18 +75,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		worldMatrix = MakeAffineMatrix(scale, rotate, translate);
-		wvpMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+		sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
+		sphereWvpMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		worldMatrix2 = MakeAffineMatrix(scale2, rotate2, translate2);
-		wvpMatrix2 = Multiply(worldMatrix2, Multiply(viewMatrix, projectionMatrix));
+		PlaneWorldMatrix = MakeAffineMatrix(PlaneScale, PlaneRotate, PlaneTranslate);
+		PlaneWvpMatrix = Multiply(PlaneWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), cameraRotation, cameraPosition);
 		viewMatrix = Inverse(cameraMatrix);
 
-		// 球と球の当たり判定
-		bool isHit = IsSphereCollision(sphere1, sphere2);
-		if (isHit) {
+		// 球と平面の衝突判定
+		bool isCollide = IsSpherePlaneCollision(sphere, plane);
+		if (isCollide) {
 			color1 = RED;
 		} else {
 			color1 = WHITE;
@@ -96,31 +97,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///-------------------///
 
 
-
+		
 		///-------------------///
 		/// ↓描画処理ここから///
 		///-------------------///
 
 		DrawGrid(gridWVPMatrix, viewportMtrix);
 
-		DrawSphere(sphere1, wvpMatrix, viewportMtrix, color1);
-		DrawSphere(sphere2, wvpMatrix2, viewportMtrix, color2);
+		DrawSphere(sphere, sphereWvpMatrix, viewportMtrix, color1);
 
+		DrawPlane(plane, PlaneWvpMatrix, viewportMtrix, color2);
 
-		ImGui::Begin("sphere1");
-		ImGui::DragFloat3("Scale", &scale.x, -0.01f, 1.0f, 10.0f);
-		ImGui::DragFloat3("Rotate", &rotate.x, -0.01f, 0.0f, 6.28f);
-		ImGui::DragFloat3("Translate", &translate.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Center", &sphere1.center.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat("Radius", &sphere1.radius, -0.01f, 0.0f, 50.0f);
+		ImGui::Begin("Grid");
+		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
+		ImGui::DragFloat3("Rotate", &gridRotate.x, -0.01f, 0.0f, 6.28f);
+		ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
-		ImGui::Begin("sphere2");
-		ImGui::DragFloat3("Scale", &scale2.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Rotate", &rotate2.x, -0.01f, 0.0f, 6.28f);
-		ImGui::DragFloat3("Translate", &translate2.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Center", &sphere2.center.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat("Radius", &sphere2.radius, -0.01f, 0.0f, 50.0f);
+		ImGui::Begin("sphere");
+		ImGui::DragFloat3("Scale", &sphereScale.x, -0.01f, 1.0f, 10.0f);
+		ImGui::DragFloat3("Rotate", &sphereRotate.x, -0.01f, 0.0f, 6.28f);
+		ImGui::DragFloat3("Translate", &sphereTranslate.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Center", &sphere.center.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("Radius", &sphere.radius, -0.01f, 0.0f, 50.0f);
+		ImGui::End();
+
+		ImGui::Begin("Plane");
+		ImGui::DragFloat3("Scale", &PlaneScale.x, -0.01f, 1.0f, 10.0f);
+		ImGui::DragFloat3("Rotate", &PlaneRotate.x, -0.01f, 0.0f, 6.28f);
+		ImGui::DragFloat3("Translate", &PlaneTranslate.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Normal", &plane.normal.x, -0.01f, -10.0f, 10.0f);
+		plane.normal = Normalize(plane.normal);
+		ImGui::DragFloat("Distance", &plane.distance, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
 		///-------------------///
