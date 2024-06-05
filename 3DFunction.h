@@ -10,6 +10,49 @@ struct Sphere {
 	float radius;
 };
 
+void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys) {
+
+	if (keys[DIK_W]) {
+		cameraPosition.z -= moveSpeed;
+	}
+
+	if (keys[DIK_S]) {
+		cameraPosition.z += moveSpeed;
+	}
+
+	if (keys[DIK_A]) {
+		cameraPosition.x -= moveSpeed;
+	}
+
+	if (keys[DIK_D]) {
+		cameraPosition.x += moveSpeed;
+	}
+
+	if (keys[DIK_SPACE]) {
+		cameraPosition.y += moveSpeed;
+	}
+
+	if (keys[DIK_LSHIFT]) {
+		cameraPosition.y -= moveSpeed;
+	}
+
+	if (keys[DIK_UP]) {
+		cameraRotation.x += rotateSpeed;
+	}
+
+	if (keys[DIK_DOWN]) {
+		cameraRotation.x -= rotateSpeed;
+	}
+
+	if (keys[DIK_LEFT]) {
+		cameraRotation.y += rotateSpeed;
+	}
+
+	if (keys[DIK_RIGHT]) {
+		cameraRotation.y -= rotateSpeed;
+	}
+}
+
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
 	const float kGridHalfWidth = 2.0f; // グリッドの半分の幅
 	const uint32_t kSubdivision = 10; // 1分割数

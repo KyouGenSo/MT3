@@ -69,46 +69,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから///
 		///-------------------///
 
-		if (keys[DIK_W]) {
-			cameraPosition.z -= 0.1f;
-		}
-
-		if (keys[DIK_S]) {
-			cameraPosition.z += 0.1f;
-		}
-
-		if (keys[DIK_A]) {
-			cameraPosition.x -= 0.1f;
-		}
-
-		if (keys[DIK_D]) {
-			cameraPosition.x += 0.1f;
-		}
-
-		if (keys[DIK_SPACE]) {
-			cameraPosition.y += 0.1f;
-		}
-
-		if (keys[DIK_LSHIFT]) {
-			cameraPosition.y -= 0.1f;
-		}
-
-		if (keys[DIK_UP]) {
-			cameraRotation.x += 0.01f;
-		}
-
-		if (keys[DIK_DOWN]) {
-			cameraRotation.x -= 0.01f;
-		}
-
-		if (keys[DIK_LEFT]) {
-			cameraRotation.y += 0.01f;
-		}
-
-		if (keys[DIK_RIGHT]) {
-			cameraRotation.y -= 0.01f;
-		}
-
+		CameraControl(cameraPosition, cameraRotation, 0.1f, 0.01f, keys);
 
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
