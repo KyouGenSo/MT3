@@ -21,7 +21,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Sphere sphere = { Vector3(-1.5f, 0.0f, 0.0f), 1.0f };
+	Segment segment = { Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.0f) };
 	Plane plane = { Vector3(0.0f, 1.0f, 0.0f), 0.0f };
 
 	int color1 = WHITE;
@@ -31,13 +31,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
 	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
 
-	Vector3 sphereScale(1.0f, 1.0f, 1.0f);
-	Vector3 sphereRotate(0.0f, 0.0f, 0.0f);
-	Vector3 sphereTranslate(0.0f, 0.0f, 0.0f);
-
 	Vector3 PlaneScale(1.0f, 1.0f, 1.0f);
 	Vector3 PlaneRotate(0.0f, 0.0f, 0.0f);
 	Vector3 PlaneTranslate(0.0f, 0.0f, 0.0f);
+
+	Vector3 segmentScale(1.0f, 1.0f, 1.0f);
+	Vector3 segmentRotate(0.0f, 0.0f, 0.0f);
+	Vector3 segmentTranslate(0.0f, 0.0f, 0.0f);
 
 	Vector3 cameraPosition(0.0f, 0.0f, 10.0f);
 	Vector3 cameraRotation(0.0f, 0.0f, 0.0f);
@@ -50,12 +50,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 	Matrix4x4 gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-	Matrix4x4 sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
-	Matrix4x4 sphereWvpMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
-
 	Matrix4x4 PlaneWorldMatrix = MakeAffineMatrix(PlaneScale, PlaneRotate, PlaneTranslate);
 	Matrix4x4 PlaneWvpMatrix = Multiply(PlaneWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
+	Matrix4x4 segmentWorldMatrix = MakeAffineMatrix(segmentScale, segmentRotate, segmentTranslate);
+	Matrix4x4 segmentWvpMatrix = Multiply(segmentWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -75,17 +74,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
-		sphereWvpMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
-
 		PlaneWorldMatrix = MakeAffineMatrix(PlaneScale, PlaneRotate, PlaneTranslate);
 		PlaneWvpMatrix = Multiply(PlaneWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+
+		segmentWorldMatrix = MakeAffineMatrix(segmentScale, segmentRotate, segmentTranslate);
+		segmentWvpMatrix = Multiply(segmentWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+
+		Vector3 segmentOrigin = Transform(viewportMtrix, Transform(segmentWvpMatrix, segment.origin));
+		Vector3 segmentEnd = Transform(viewportMtrix, Transform(segmentWvpMatrix, Add(segment.origin, segment.diff)));
 
 		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), cameraRotation, cameraPosition);
 		viewMatrix = Inverse(cameraMatrix);
 
-		// 球と平面の衝突判定
-		bool isCollide = IsSpherePlaneCollision(sphere, plane);
+		// 線と平面の衝突判定
+		bool isCollide = IsSegmentPlaneCollision(segment, plane);
+
 		if (isCollide) {
 			color1 = RED;
 		} else {
@@ -104,9 +107,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(gridWVPMatrix, viewportMtrix);
 
-		DrawSphere(sphere, sphereWvpMatrix, viewportMtrix, color1);
-
 		DrawPlane(plane, PlaneWvpMatrix, viewportMtrix, color2);
+
+		Novice::DrawLine(int(segmentOrigin.x), int(segmentOrigin.y), int(segmentEnd.x), int(segmentEnd.y), color1);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
@@ -114,12 +117,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
-		ImGui::Begin("sphere");
-		ImGui::DragFloat3("Scale", &sphereScale.x, -0.01f, 1.0f, 10.0f);
-		ImGui::DragFloat3("Rotate", &sphereRotate.x, -0.01f, 0.0f, 6.28f);
-		ImGui::DragFloat3("Translate", &sphereTranslate.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Center", &sphere.center.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat("Radius", &sphere.radius, -0.01f, 0.0f, 50.0f);
+		ImGui::Begin("Segment");
+		ImGui::DragFloat3("Origin", &segment.origin.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Diff", &segment.diff.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
 		ImGui::Begin("Plane");
