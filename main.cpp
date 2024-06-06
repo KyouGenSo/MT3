@@ -21,8 +21,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	AABB aabb1 = { Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.0f, 0.0f, 0.0f) };
-	AABB aabb2 = { Vector3(0.2f, 0.2f, 0.2f), Vector3(1.0f, 1.0f, 1.0f) };
+	AABB aabb = { Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.0f, 0.0f, 0.0f) };
+	Sphere sphere = { Vector3(0.0f, 0.0f, 0.0f), 1.0f };
 
 	int color1 = WHITE;
 	int color2 = WHITE;
@@ -31,13 +31,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
 	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
 
-	Vector3 aabb1Scale(1.0f, 1.0f, 1.0f);
-	Vector3 aabb1Rotate(0.0f, 0.0f, 0.0f);
-	Vector3 aabb1Translate(0.0f, 0.0f, 0.0f);
+	Vector3 aabbScale(1.0f, 1.0f, 1.0f);
+	Vector3 aabbRotate(0.0f, 0.0f, 0.0f);
+	Vector3 aabbTranslate(0.0f, 0.0f, 0.0f);
 
-	Vector3 aabb2Scale(1.0f, 1.0f, 1.0f);
-	Vector3 aabb2Rotate(0.0f, 0.0f, 0.0f);
-	Vector3 aabb2Translate(0.0f, 0.0f, 0.0f);
+	Vector3 sphereScale(1.0f, 1.0f, 1.0f);
+	Vector3 sphereRotate(0.0f, 0.0f, 0.0f);
+	Vector3 sphereTranslate(0.0f, 0.0f, 0.0f);
 
 	Vector3 cameraPosition(0.0f, 0.0f, 10.0f);
 	Vector3 cameraRotation(0.0f, 0.0f, 0.0f);
@@ -50,11 +50,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 	Matrix4x4 gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-	Matrix4x4 aabb1WorldMatrix = MakeAffineMatrix(aabb1Scale, aabb1Rotate, aabb1Translate);
-	Matrix4x4 aabb1WVPMatrix = Multiply(aabb1WorldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 aabbWorldMatrix = MakeAffineMatrix(aabbScale, aabbRotate, aabbTranslate);
+	Matrix4x4 aabbWVPMatrix = Multiply(aabbWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-	Matrix4x4 aabb2WorldMatrix = MakeAffineMatrix(aabb2Scale, aabb2Rotate, aabb2Translate);
-	Matrix4x4 aabb2WVPMatrix = Multiply(aabb2WorldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
+	Matrix4x4 sphereWVPMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -74,17 +74,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		aabb1WorldMatrix = MakeAffineMatrix(aabb1Scale, aabb1Rotate, aabb1Translate);
-		aabb1WVPMatrix = Multiply(aabb1WorldMatrix, Multiply(viewMatrix, projectionMatrix));
+		aabbWorldMatrix = MakeAffineMatrix(aabbScale, aabbRotate, aabbTranslate);
+		aabbWVPMatrix = Multiply(aabbWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		aabb2WorldMatrix = MakeAffineMatrix(aabb2Scale, aabb2Rotate, aabb2Translate);
-		aabb2WVPMatrix = Multiply(aabb2WorldMatrix, Multiply(viewMatrix, projectionMatrix));
+		sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
+		sphereWVPMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), cameraRotation, cameraPosition);
 		viewMatrix = Inverse(cameraMatrix);
 
 		// AABBの衝突判定
-		bool isCollide = IsAABBCollision(aabb1, aabb2);
+		bool isCollide = IsAABBSphereCollision(aabb, sphere);
 
 		if (isCollide) {
 			color1 = RED;
@@ -104,8 +104,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(gridWVPMatrix, viewportMtrix);
 
-		DrawAABB(aabb1, gridWVPMatrix, viewportMtrix, color1);
-		DrawAABB(aabb2, gridWVPMatrix, viewportMtrix, color2);
+		DrawAABB(aabb, gridWVPMatrix, viewportMtrix, color1);
+
+		DrawSphere(sphere, gridWVPMatrix, viewportMtrix, color2);
 
 
 		ImGui::Begin("Grid");
@@ -114,26 +115,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
-		ImGui::Begin("AABB1");
-		ImGui::DragFloat3("min", &aabb1.min.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("max", &aabb1.max.x, -0.01f, -10.0f, 10.0f);
-		aabb1.min.x = (std::min)(aabb1.min.x, aabb1.max.x);
-		aabb1.min.y = (std::min)(aabb1.min.y, aabb1.max.y);
-		aabb1.min.z = (std::min)(aabb1.min.z, aabb1.max.z);
-		aabb1.max.x = (std::max)(aabb1.min.x, aabb1.max.x);
-		aabb1.max.y = (std::max)(aabb1.min.y, aabb1.max.y);
-		aabb1.max.z = (std::max)(aabb1.min.z, aabb1.max.z);
+		ImGui::Begin("AABB");
+		ImGui::DragFloat3("min", &aabb.min.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("max", &aabb.max.x, -0.01f, -10.0f, 10.0f);
+		aabb.min.x = (std::min)(aabb.min.x, aabb.max.x);
+		aabb.min.y = (std::min)(aabb.min.y, aabb.max.y);
+		aabb.min.z = (std::min)(aabb.min.z, aabb.max.z);
+		aabb.max.x = (std::max)(aabb.min.x, aabb.max.x);
+		aabb.max.y = (std::max)(aabb.min.y, aabb.max.y);
+		aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
 		ImGui::End();
 
-		ImGui::Begin("AABB2");
-		ImGui::DragFloat3("min", &aabb2.min.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("max", &aabb2.max.x, -0.01f, -10.0f, 10.0f);
-		aabb2.min.x = (std::min)(aabb2.min.x, aabb2.max.x);
-		aabb2.min.y = (std::min)(aabb2.min.y, aabb2.max.y);
-		aabb2.min.z = (std::min)(aabb2.min.z, aabb2.max.z);
-		aabb2.max.x = (std::max)(aabb2.min.x, aabb2.max.x);
-		aabb2.max.y = (std::max)(aabb2.min.y, aabb2.max.y);
-		aabb2.max.z = (std::max)(aabb2.min.z, aabb2.max.z);
+		ImGui::Begin("Sphere");
+		ImGui::DragFloat3("center", &sphere.center.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("radius", &sphere.radius, -0.01f, 0.0f, 10.0f);
 		ImGui::End();
 
 

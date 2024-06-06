@@ -4,6 +4,7 @@
 #include<Matrix4x4.h>
 #include<Matrix4x4Function.h>
 #include<math.h>
+#include"algorithm"
 
 struct Sphere {
 	Vector3 center;
@@ -288,6 +289,21 @@ bool IsAABBCollision(const AABB& aabb1, const AABB& aabb2) {
 	if (aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x &&
 		aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y &&
 		aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsAABBSphereCollision(const AABB& aabb, const Sphere& sphere) {
+	Vector3 closestPoint;
+	closestPoint.x = std::clamp(sphere.center.x, aabb.min.x, aabb.max.x);
+	closestPoint.y = std::clamp(sphere.center.y, aabb.min.y, aabb.max.y);
+	closestPoint.z = std::clamp(sphere.center.z, aabb.min.z, aabb.max.z);
+
+	float distance = float(Length(Subtract(closestPoint, sphere.center)));
+
+	if (distance < sphere.radius) {
 		return true;
 	}
 
