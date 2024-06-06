@@ -19,6 +19,11 @@ struct Triangle {
 	Vector3 vertex[3];
 };
 
+struct AABB {
+	Vector3 min;
+	Vector3 max;
+};
+
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys) {
 
 	if (keys[DIK_W]) {
@@ -177,6 +182,35 @@ void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatri
 	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[0].x), int(points[0].y), color);
 }
 
+void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 points[12];
+	points[0] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.min.z)));
+	points[1] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.min.z)));
+	points[2] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.max.z)));
+	points[3] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.max.z)));
+	points[4] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.min.z)));
+	points[5] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.min.z)));
+	points[6] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.max.z)));
+	points[7] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.max.z)));
+	points[8] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.min.z)));
+	points[9] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.min.z)));
+	points[10] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.min.z)));
+	points[11] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.min.z)));
+
+	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[1].x), int(points[1].y), color);
+	Novice::DrawLine(int(points[1].x), int(points[1].y), int(points[2].x), int(points[2].y), color);
+	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[3].x), int(points[3].y), color);
+	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[0].x), int(points[0].y), color);
+	Novice::DrawLine(int(points[4].x), int(points[4].y), int(points[5].x), int(points[5].y), color);
+	Novice::DrawLine(int(points[5].x), int(points[5].y), int(points[6].x), int(points[6].y), color);
+	Novice::DrawLine(int(points[6].x), int(points[6].y), int(points[7].x), int(points[7].y), color);
+	Novice::DrawLine(int(points[7].x), int(points[7].y), int(points[4].x), int(points[4].y), color);
+	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[4].x), int(points[4].y), color);
+	Novice::DrawLine(int(points[1].x), int(points[1].y), int(points[5].x), int(points[5].y), color);
+	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[6].x), int(points[6].y), color);
+	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[7].x), int(points[7].y), color);
+}
+
 bool IsSphereCollision(const Sphere& sphere1, const Sphere& sphere2) {
 	float distance = float(Length(Subtract(sphere2.center, sphere1.center)));
 
@@ -245,6 +279,16 @@ bool IsTriangleSegmentCollision(const Triangle& triangle, const Segment& segment
 		if (Dot(c01, c12) >= 0.0f && Dot(c12, c20) >= 0.0f) {
 			return true;
 		}
+	}
+
+	return false;
+}
+
+bool IsAABBCollision(const AABB& aabb1, const AABB& aabb2) {
+	if (aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x &&
+		aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y &&
+		aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z) {
+		return true;
 	}
 
 	return false;

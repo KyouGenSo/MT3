@@ -21,8 +21,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Segment segment = { Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.0f) };
-	Triangle triangle = { Vector3(0.5f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f) };
+	AABB aabb1 = { Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.0f, 0.0f, 0.0f) };
+	AABB aabb2 = { Vector3(0.2f, 0.2f, 0.2f), Vector3(1.0f, 1.0f, 1.0f) };
 
 	int color1 = WHITE;
 	int color2 = WHITE;
@@ -31,13 +31,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
 	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
 
-	Vector3 triangleScale(1.0f, 1.0f, 1.0f);
-	Vector3 triangleRotate(0.0f, 0.0f, 0.0f);
-	Vector3 triangleTranslate(0.0f, 0.0f, 0.0f);
+	Vector3 aabb1Scale(1.0f, 1.0f, 1.0f);
+	Vector3 aabb1Rotate(0.0f, 0.0f, 0.0f);
+	Vector3 aabb1Translate(0.0f, 0.0f, 0.0f);
 
-	Vector3 segmentScale(1.0f, 1.0f, 1.0f);
-	Vector3 segmentRotate(0.0f, 0.0f, 0.0f);
-	Vector3 segmentTranslate(0.0f, 0.0f, 0.0f);
+	Vector3 aabb2Scale(1.0f, 1.0f, 1.0f);
+	Vector3 aabb2Rotate(0.0f, 0.0f, 0.0f);
+	Vector3 aabb2Translate(0.0f, 0.0f, 0.0f);
 
 	Vector3 cameraPosition(0.0f, 0.0f, 10.0f);
 	Vector3 cameraRotation(0.0f, 0.0f, 0.0f);
@@ -50,11 +50,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 	Matrix4x4 gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-	Matrix4x4 triangleWorldMatrix = MakeAffineMatrix(triangleScale, triangleRotate, triangleTranslate);
-	Matrix4x4 triangleWvpMatrix = Multiply(triangleWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 aabb1WorldMatrix = MakeAffineMatrix(aabb1Scale, aabb1Rotate, aabb1Translate);
+	Matrix4x4 aabb1WVPMatrix = Multiply(aabb1WorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-	Matrix4x4 segmentWorldMatrix = MakeAffineMatrix(segmentScale, segmentRotate, segmentTranslate);
-	Matrix4x4 segmentWvpMatrix = Multiply(segmentWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 aabb2WorldMatrix = MakeAffineMatrix(aabb2Scale, aabb2Rotate, aabb2Translate);
+	Matrix4x4 aabb2WVPMatrix = Multiply(aabb2WorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -74,20 +74,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		triangleWorldMatrix = MakeAffineMatrix(triangleScale, triangleRotate, triangleTranslate);
-		triangleWvpMatrix = Multiply(triangleWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+		aabb1WorldMatrix = MakeAffineMatrix(aabb1Scale, aabb1Rotate, aabb1Translate);
+		aabb1WVPMatrix = Multiply(aabb1WorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		segmentWorldMatrix = MakeAffineMatrix(segmentScale, segmentRotate, segmentTranslate);
-		segmentWvpMatrix = Multiply(segmentWorldMatrix, Multiply(viewMatrix, projectionMatrix));
-
-		Vector3 segmentOrigin = Transform(viewportMtrix, Transform(segmentWvpMatrix, segment.origin));
-		Vector3 segmentEnd = Transform(viewportMtrix, Transform(segmentWvpMatrix, Add(segment.origin, segment.diff)));
+		aabb2WorldMatrix = MakeAffineMatrix(aabb2Scale, aabb2Rotate, aabb2Translate);
+		aabb2WVPMatrix = Multiply(aabb2WorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), cameraRotation, cameraPosition);
 		viewMatrix = Inverse(cameraMatrix);
 
-		// 線と平面の衝突判定
-		bool isCollide = IsTriangleSegmentCollision(triangle, segment);
+		// AABBの衝突判定
+		bool isCollide = IsAABBCollision(aabb1, aabb2);
 
 		if (isCollide) {
 			color1 = RED;
@@ -107,9 +104,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(gridWVPMatrix, viewportMtrix);
 
-		DrawTriangle(triangle, triangleWvpMatrix, viewportMtrix, color2);
+		DrawAABB(aabb1, gridWVPMatrix, viewportMtrix, color1);
+		DrawAABB(aabb2, gridWVPMatrix, viewportMtrix, color2);
 
-		Novice::DrawLine(int(segmentOrigin.x), int(segmentOrigin.y), int(segmentEnd.x), int(segmentEnd.y), color1);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
@@ -117,11 +114,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
-		ImGui::Begin("Segment");
-		ImGui::DragFloat3("Origin", &segment.origin.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Diff", &segment.diff.x, -0.01f, -10.0f, 10.0f);
+		ImGui::Begin("AABB1");
+		ImGui::DragFloat3("min", &aabb1.min.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("max", &aabb1.max.x, -0.01f, -10.0f, 10.0f);
+		aabb1.min.x = (std::min)(aabb1.min.x, aabb1.max.x);
+		aabb1.min.y = (std::min)(aabb1.min.y, aabb1.max.y);
+		aabb1.min.z = (std::min)(aabb1.min.z, aabb1.max.z);
+		aabb1.max.x = (std::max)(aabb1.min.x, aabb1.max.x);
+		aabb1.max.y = (std::max)(aabb1.min.y, aabb1.max.y);
+		aabb1.max.z = (std::max)(aabb1.min.z, aabb1.max.z);
 		ImGui::End();
 
+		ImGui::Begin("AABB2");
+		ImGui::DragFloat3("min", &aabb2.min.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("max", &aabb2.max.x, -0.01f, -10.0f, 10.0f);
+		aabb2.min.x = (std::min)(aabb2.min.x, aabb2.max.x);
+		aabb2.min.y = (std::min)(aabb2.min.y, aabb2.max.y);
+		aabb2.min.z = (std::min)(aabb2.min.z, aabb2.max.z);
+		aabb2.max.x = (std::max)(aabb2.min.x, aabb2.max.x);
+		aabb2.max.y = (std::max)(aabb2.min.y, aabb2.max.y);
+		aabb2.max.z = (std::max)(aabb2.min.z, aabb2.max.z);
+		ImGui::End();
 
 
 		///-------------------///
