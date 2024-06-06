@@ -15,6 +15,10 @@ struct Plane {
 	float distance;
 };
 
+struct Triangle {
+	Vector3 vertex[3];
+};
+
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys) {
 
 	if (keys[DIK_W]) {
@@ -162,6 +166,17 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[0].x), int(points[0].y), color);
 }
 
+void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 points[3];
+	for (int i = 0; i < 3; i++) {
+		points[i] = Transform(viewportMatrix, Transform(viewProjectionMatrix, triangle.vertex[i]));
+	}
+
+	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[1].x), int(points[1].y), color);
+	Novice::DrawLine(int(points[1].x), int(points[1].y), int(points[2].x), int(points[2].y), color);
+	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[0].x), int(points[0].y), color);
+}
+
 bool IsSphereCollision(const Sphere& sphere1, const Sphere& sphere2) {
 	float distance = float(Length(Subtract(sphere2.center, sphere1.center)));
 
@@ -192,4 +207,33 @@ bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane) {
 	} else {
 		return false;
 	}
+}
+
+bool IsTriangleSegmentCollision(const Triangle& triangle, const Segment& segment) {
+	Vector3 v01 = Subtract(triangle.vertex[1], triangle.vertex[0]);
+	Vector3 v12 = Subtract(triangle.vertex[2], triangle.vertex[1]);
+	Vector3 v20 = Subtract(triangle.vertex[0], triangle.vertex[2]);
+
+	// 衝突点が三角形の内側にあるかどうかを判定する
+	Vector3 normal = Cross(v01, v12);
+	float distance = Dot(triangle.vertex[0], normal);
+	float distance1 = Dot(segment.origin, normal) - distance;
+	float distance2 = Dot(Add(segment.origin, segment.diff), normal) - distance;
+
+	if (distance1 * distance2 < 0.0f) {
+		Vector3 collisionPoint = Add(segment.origin, Multiply(segment.diff, distance1 / (distance1 - distance2)));
+		Vector3 v0p = Subtract(collisionPoint, triangle.vertex[0]);
+		Vector3 v1p = Subtract(collisionPoint, triangle.vertex[1]);
+		Vector3 v2p = Subtract(collisionPoint, triangle.vertex[2]);
+
+		Vector3 c01 = Cross(v01, v1p);
+		Vector3 c12 = Cross(v12, v2p);
+		Vector3 c20 = Cross(v20, v0p);
+
+		if (Dot(c01, c12) >= 0.0f && Dot(c12, c20) >= 0.0f) {
+			return true;
+		}
+	}
+
+	return false;
 }

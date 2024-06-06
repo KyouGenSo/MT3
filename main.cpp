@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char preKeys[256] = { 0 };
 
 	Segment segment = { Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.0f) };
-	Plane plane = { Vector3(0.0f, 1.0f, 0.0f), 0.0f };
+	Triangle triangle = { Vector3(0.5f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f) };
 
 	int color1 = WHITE;
 	int color2 = WHITE;
@@ -31,9 +31,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
 	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
 
-	Vector3 PlaneScale(1.0f, 1.0f, 1.0f);
-	Vector3 PlaneRotate(0.0f, 0.0f, 0.0f);
-	Vector3 PlaneTranslate(0.0f, 0.0f, 0.0f);
+	Vector3 triangleScale(1.0f, 1.0f, 1.0f);
+	Vector3 triangleRotate(0.0f, 0.0f, 0.0f);
+	Vector3 triangleTranslate(0.0f, 0.0f, 0.0f);
 
 	Vector3 segmentScale(1.0f, 1.0f, 1.0f);
 	Vector3 segmentRotate(0.0f, 0.0f, 0.0f);
@@ -50,8 +50,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 	Matrix4x4 gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-	Matrix4x4 PlaneWorldMatrix = MakeAffineMatrix(PlaneScale, PlaneRotate, PlaneTranslate);
-	Matrix4x4 PlaneWvpMatrix = Multiply(PlaneWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 triangleWorldMatrix = MakeAffineMatrix(triangleScale, triangleRotate, triangleTranslate);
+	Matrix4x4 triangleWvpMatrix = Multiply(triangleWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 	Matrix4x4 segmentWorldMatrix = MakeAffineMatrix(segmentScale, segmentRotate, segmentTranslate);
 	Matrix4x4 segmentWvpMatrix = Multiply(segmentWorldMatrix, Multiply(viewMatrix, projectionMatrix));
@@ -74,8 +74,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		PlaneWorldMatrix = MakeAffineMatrix(PlaneScale, PlaneRotate, PlaneTranslate);
-		PlaneWvpMatrix = Multiply(PlaneWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+		triangleWorldMatrix = MakeAffineMatrix(triangleScale, triangleRotate, triangleTranslate);
+		triangleWvpMatrix = Multiply(triangleWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 		segmentWorldMatrix = MakeAffineMatrix(segmentScale, segmentRotate, segmentTranslate);
 		segmentWvpMatrix = Multiply(segmentWorldMatrix, Multiply(viewMatrix, projectionMatrix));
@@ -87,7 +87,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		viewMatrix = Inverse(cameraMatrix);
 
 		// 線と平面の衝突判定
-		bool isCollide = IsSegmentPlaneCollision(segment, plane);
+		bool isCollide = IsTriangleSegmentCollision(triangle, segment);
 
 		if (isCollide) {
 			color1 = RED;
@@ -107,7 +107,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(gridWVPMatrix, viewportMtrix);
 
-		DrawPlane(plane, PlaneWvpMatrix, viewportMtrix, color2);
+		DrawTriangle(triangle, triangleWvpMatrix, viewportMtrix, color2);
 
 		Novice::DrawLine(int(segmentOrigin.x), int(segmentOrigin.y), int(segmentEnd.x), int(segmentEnd.y), color1);
 
@@ -122,14 +122,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Diff", &segment.diff.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
-		ImGui::Begin("Plane");
-		ImGui::DragFloat3("Scale", &PlaneScale.x, -0.01f, 1.0f, 10.0f);
-		ImGui::DragFloat3("Rotate", &PlaneRotate.x, -0.01f, 0.0f, 6.28f);
-		ImGui::DragFloat3("Translate", &PlaneTranslate.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Normal", &plane.normal.x, -0.01f, -10.0f, 10.0f);
-		plane.normal = Normalize(plane.normal);
-		ImGui::DragFloat("Distance", &plane.distance, -0.01f, -10.0f, 10.0f);
-		ImGui::End();
+
 
 		///-------------------///
 		/// ↑描画処理ここまで///
