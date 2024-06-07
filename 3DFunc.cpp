@@ -3,11 +3,11 @@
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys) {
 
 	if (keys[DIK_W]) {
-		cameraPosition.z -= moveSpeed;
+		cameraPosition.z += moveSpeed;
 	}
 
 	if (keys[DIK_S]) {
-		cameraPosition.z += moveSpeed;
+		cameraPosition.z -= moveSpeed;
 	}
 
 	if (keys[DIK_A]) {
@@ -27,19 +27,19 @@ void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveS
 	}
 
 	if (keys[DIK_UP]) {
-		cameraRotation.x += rotateSpeed;
-	}
-
-	if (keys[DIK_DOWN]) {
 		cameraRotation.x -= rotateSpeed;
 	}
 
+	if (keys[DIK_DOWN]) {
+		cameraRotation.x += rotateSpeed;
+	}
+
 	if (keys[DIK_LEFT]) {
-		cameraRotation.y += rotateSpeed;
+		cameraRotation.y -= rotateSpeed;
 	}
 
 	if (keys[DIK_RIGHT]) {
-		cameraRotation.y -= rotateSpeed;
+		cameraRotation.y += rotateSpeed;
 	}
 }
 
