@@ -55,6 +55,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), cameraRotation, cameraPosition);
 	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 	Matrix4x4 projectionMatrix = MakePerspectiveMatrix(0.45f, (float)windowX / (float)windowY, 0.1f, 100.0f);
+	Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 	Matrix4x4 viewportMtrix = MakeViewportMatrix(0, 0, float(windowX), float(windowY), 0.0f, 1.0f);
 
 	Matrix4x4 gridWorldMatrix;
@@ -84,11 +85,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		CameraControl(cameraPosition, cameraRotation, 0.1f, 0.01f, keys);
 
+		viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
+
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
-		gridWVPMatrix = Multiply(gridWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+		gridWVPMatrix = Multiply(gridWorldMatrix, viewProjectionMatrix);
 
 		sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
-		sphereWVPMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+		sphereWVPMatrix = Multiply(sphereWorldMatrix, viewProjectionMatrix);
 
 		obbRotateMatrix = Multiply(MakeRotateMatrixX(obbRotate.x), Multiply(MakeRotateMatrixY(obbRotate.y), MakeRotateMatrixZ(obbRotate.z)));
 
@@ -108,7 +111,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		obbTranslateMatrix = MakeTranslateMatrix(obb.center);
 		obbWorldMatrix = Multiply(obbRotateMatrix, obbTranslateMatrix);
-		obbWVPMatrix = Multiply(obbWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+		obbWVPMatrix = Multiply(obbWorldMatrix, viewProjectionMatrix);
 
 		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), cameraRotation, cameraPosition);
 		viewMatrix = Inverse(cameraMatrix);
@@ -147,11 +150,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから///
 		///-------------------///
 
-		DrawGrid(Multiply(viewMatrix, projectionMatrix), viewportMtrix);
+		DrawGrid(viewProjectionMatrix, viewportMtrix);
 
-		DrawOBB(obb, obbWVPMatrix, viewportMtrix, color1);
+		DrawOBB(obb, viewProjectionMatrix, viewportMtrix, color1);
 
-		DrawSphere(sphere, sphereWVPMatrix, viewportMtrix, color2);
+		DrawSphere(sphere, viewProjectionMatrix, viewportMtrix, color2);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);

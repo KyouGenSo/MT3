@@ -62,8 +62,8 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 	// 奥から手前への線を順々に引いていく
 	for (uint32_t xIndex = 0; xIndex <= kSubdivision; xIndex++) {
 		// 上の情報を使ってワールド座標系上の始点と終点を求める
-		Vector3 worldStart(-kGridHalfWidth + kGridEvery * float(xIndex), -1.0f, kGridHalfWidth);
-		Vector3 worldEnd(-kGridHalfWidth + kGridEvery * float(xIndex), -1.0f, -kGridHalfWidth);
+		Vector3 worldStart(-kGridHalfWidth + kGridEvery * float(xIndex), 0.0f, kGridHalfWidth);
+		Vector3 worldEnd(-kGridHalfWidth + kGridEvery * float(xIndex), 0.0f, -kGridHalfWidth);
 		// スクリーン座標系まで変換をかける
 		Vector3 screenStart = Transform(viewProjectionMatrix, worldStart);
 		Vector3 screenEnd = Transform(viewProjectionMatrix, worldEnd);
@@ -77,8 +77,8 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 	// 左から右への線を順々に引いていく
 	for (uint32_t zIndex = 0; zIndex <= kSubdivision; zIndex++) {
 		// 上の情報を使ってワールド座標系上の始点と終点を求める
-		Vector3 worldStart(-kGridHalfWidth, -1.0f, kGridHalfWidth - kGridEvery * float(zIndex));
-		Vector3 worldEnd(kGridHalfWidth, -1.0f, kGridHalfWidth - kGridEvery * float(zIndex));
+		Vector3 worldStart(-kGridHalfWidth, 0.0f, kGridHalfWidth - kGridEvery * float(zIndex));
+		Vector3 worldEnd(kGridHalfWidth, 0.0f, kGridHalfWidth - kGridEvery * float(zIndex));
 		// スクリーン座標系まで変換をかける
 		Vector3 screenStart = Transform(viewProjectionMatrix, worldStart);
 		Vector3 screenEnd = Transform(viewProjectionMatrix, worldEnd);
