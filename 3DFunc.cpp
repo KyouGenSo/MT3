@@ -1,29 +1,4 @@
-﻿#pragma once
-#include<Vector3.h>
-#include<Vector3Function.h>
-#include<Matrix4x4.h>
-#include<Matrix4x4Function.h>
-#include<math.h>
-#include"algorithm"
-
-struct Sphere {
-	Vector3 center;
-	float radius;
-};
-
-struct Plane {
-	Vector3 normal;
-	float distance;
-};
-
-struct Triangle {
-	Vector3 vertex[3];
-};
-
-struct AABB {
-	Vector3 min;
-	Vector3 max;
-};
+﻿#include"3Dfunc.h"
 
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys) {
 
@@ -75,6 +50,10 @@ Vector3 Perpendicular(const Vector3& v) {
 	return Vector3(0.0f, -v.z, v.y);
 }
 
+
+/// <summary>
+/// 3Dオブジェクト描画関数
+/// </summary>
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
 	const float kGridHalfWidth = 2.0f; // グリッドの半分の幅
 	const uint32_t kSubdivision = 10; // 1分割数
@@ -185,13 +164,13 @@ void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatri
 
 void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	Vector3 points[12];
-	points[0] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.min.z)));
+	points[0] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.min.z))); // min
 	points[1] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.min.z)));
 	points[2] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.max.z)));
 	points[3] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.max.z)));
 	points[4] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.min.z)));
 	points[5] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.min.z)));
-	points[6] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.max.z)));
+	points[6] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.max.z))); // max
 	points[7] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.max.z)));
 	points[8] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.min.z)));
 	points[9] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.min.z)));
@@ -212,19 +191,22 @@ void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Mat
 	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[7].x), int(points[7].y), color);
 }
 
-bool IsSphereCollision(const Sphere& sphere1, const Sphere& sphere2) {
+
+/// <summary>
+/// 衝突判定関数
+/// </summary>
+bool IsCollision(const Sphere& sphere1, const Sphere& sphere2) {
 	float distance = float(Length(Subtract(sphere2.center, sphere1.center)));
 
 	if (distance < sphere1.radius + sphere2.radius) {
 		return true;
-	}
-	else {
+	} else {
 		return false;
 	}
 }
 
-bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
-	float distance = Dot(sphere.center, plane.normal) - plane.distance; 
+bool IsCollision(const Sphere& sphere, const Plane& plane) {
+	float distance = Dot(sphere.center, plane.normal) - plane.distance;
 
 	if (distance < sphere.radius) {
 		return true;
@@ -233,7 +215,7 @@ bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
 	}
 }
 
-bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane) {
+bool IsCollision(const Segment& segment, const Plane& plane) {
 	float dot = Dot(plane.normal, segment.diff);
 
 	if (dot == 0.0f) {
@@ -256,7 +238,7 @@ bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane) {
 	}
 }
 
-bool IsTriangleSegmentCollision(const Triangle& triangle, const Segment& segment) {
+bool IsCollision(const Triangle& triangle, const Segment& segment) {
 	Vector3 v01 = Subtract(triangle.vertex[1], triangle.vertex[0]);
 	Vector3 v12 = Subtract(triangle.vertex[2], triangle.vertex[1]);
 	Vector3 v20 = Subtract(triangle.vertex[0], triangle.vertex[2]);
@@ -285,7 +267,7 @@ bool IsTriangleSegmentCollision(const Triangle& triangle, const Segment& segment
 	return false;
 }
 
-bool IsAABBCollision(const AABB& aabb1, const AABB& aabb2) {
+bool IsCollision(const AABB& aabb1, const AABB& aabb2) {
 	if (aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x &&
 		aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y &&
 		aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z) {
@@ -295,7 +277,7 @@ bool IsAABBCollision(const AABB& aabb1, const AABB& aabb2) {
 	return false;
 }
 
-bool IsAABBSphereCollision(const AABB& aabb, const Sphere& sphere) {
+bool IsCollision(const AABB& aabb, const Sphere& sphere) {
 	Vector3 closestPoint;
 	closestPoint.x = std::clamp(sphere.center.x, aabb.min.x, aabb.max.x);
 	closestPoint.y = std::clamp(sphere.center.y, aabb.min.y, aabb.max.y);
@@ -305,6 +287,65 @@ bool IsAABBSphereCollision(const AABB& aabb, const Sphere& sphere) {
 
 	if (distance < sphere.radius) {
 		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const AABB& aabb, const Segment& segment) {
+	Vector3 min = aabb.min;
+	Vector3 max = aabb.max;
+	float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
+
+	assert(segment.diff.x != 0.0f || segment.diff.y != 0.0f || segment.diff.z != 0.0f);
+
+	if (segment.diff.x == 0.0f) {
+		if (segment.origin.x < min.x || segment.origin.x > max.x) {
+			return false;
+		}
+		tMaxX = INFINITY;
+		tMinX = -INFINITY;
+	} else {
+		tMinX = (min.x - segment.origin.x) / segment.diff.x;
+		tMaxX = (max.x - segment.origin.x) / segment.diff.x;
+	}
+
+	if (segment.diff.y == 0.0f) {
+		if (segment.origin.y < min.y || segment.origin.y > max.y) {
+			return false;
+		}
+		tMaxY = INFINITY;
+		tMinY = -INFINITY;
+	} else {
+		tMinY = (min.y - segment.origin.y) / segment.diff.y;
+		tMaxY = (max.y - segment.origin.y) / segment.diff.y;
+	}
+
+	if (segment.diff.z == 0.0f) {
+		if (segment.origin.z < min.z || segment.origin.z > max.z) {
+			return false;
+		}
+		tMaxZ = INFINITY;
+		tMinZ = -INFINITY;
+	} else {
+		tMinZ = (min.z - segment.origin.z) / segment.diff.z;
+		tMaxZ = (max.z - segment.origin.z) / segment.diff.z;
+	}
+
+	float tNearX = (std::min)(tMinX, tMaxX);
+	float tFarX = (std::max)(tMinX, tMaxX);
+	float tNearY = (std::min)(tMinY, tMaxY);
+	float tFarY = (std::max)(tMinY, tMaxY);
+	float tNearZ = (std::min)(tMinZ, tMaxZ);
+	float tFarZ = (std::max)(tMinZ, tMaxZ);
+
+	float tMin = (std::max)((std::max)(tNearX, tNearY), tNearZ);
+	float tMax = (std::min)((std::min)(tFarX, tFarY), tFarZ);
+
+	if (tMin <= tMax) {
+		if (tMin >= 0.0f && tMin <= 1.0f || tMax >= 0.0f && tMax <= 1.0f) {
+			return true;
+		}
 	}
 
 	return false;

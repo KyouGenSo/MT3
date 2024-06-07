@@ -1,7 +1,7 @@
 #include <Novice.h>
-#include <Matrix4x4Function.h>
-#include <Vector3Function.h>
-#include <3DFunction.h>
+#include <MatrixFunc.h>
+#include <VectorFunc.h>
+#include <3DFunc.h>
 #include <imgui.h>
 #include <ImGuiManager.h>
 #include <imgui_impl_dx12.h>
@@ -21,8 +21,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	AABB aabb = { Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.0f, 0.0f, 0.0f) };
-	Sphere sphere = { Vector3(0.0f, 0.0f, 0.0f), 1.0f };
+	AABB aabb = { Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f) };
+	Segment segment = { Vector3(-0.7f, 0.3f, 0.0f), Vector3(2.0f, -0.5f, 0.0f) };
 
 	int color1 = WHITE;
 	int color2 = WHITE;
@@ -35,9 +35,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 aabbRotate(0.0f, 0.0f, 0.0f);
 	Vector3 aabbTranslate(0.0f, 0.0f, 0.0f);
 
-	Vector3 sphereScale(1.0f, 1.0f, 1.0f);
-	Vector3 sphereRotate(0.0f, 0.0f, 0.0f);
-	Vector3 sphereTranslate(0.0f, 0.0f, 0.0f);
+	Vector3 segmentScale(1.0f, 1.0f, 1.0f);
+	Vector3 segmentRotate(0.0f, 0.0f, 0.0f);
+	Vector3 segmentTranslate(0.0f, 0.0f, 0.0f);
 
 	Vector3 cameraPosition(0.0f, 0.0f, 10.0f);
 	Vector3 cameraRotation(0.0f, 0.0f, 0.0f);
@@ -53,8 +53,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 aabbWorldMatrix = MakeAffineMatrix(aabbScale, aabbRotate, aabbTranslate);
 	Matrix4x4 aabbWVPMatrix = Multiply(aabbWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-	Matrix4x4 sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
-	Matrix4x4 sphereWVPMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 segmentWorldMatrix = MakeAffineMatrix(segmentScale, segmentRotate, segmentTranslate);
+	Matrix4x4 segmentWVPMatrix = Multiply(segmentWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -77,14 +77,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		aabbWorldMatrix = MakeAffineMatrix(aabbScale, aabbRotate, aabbTranslate);
 		aabbWVPMatrix = Multiply(aabbWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-		sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
-		sphereWVPMatrix = Multiply(sphereWorldMatrix, Multiply(viewMatrix, projectionMatrix));
+		segmentWorldMatrix = MakeAffineMatrix(segmentScale, segmentRotate, segmentTranslate);
+		segmentWVPMatrix = Multiply(segmentWorldMatrix, Multiply(viewMatrix, projectionMatrix));
 
 		cameraMatrix = MakeAffineMatrix(Vector3(1.0f, 1.0f, 1.0f), cameraRotation, cameraPosition);
 		viewMatrix = Inverse(cameraMatrix);
 
+		Vector3 start = Transform(viewportMtrix, Transform(segmentWVPMatrix, segment.origin));
+		Vector3 end = Transform(viewportMtrix, Transform(segmentWVPMatrix, Add(segment.origin, segment.diff)));
+
 		// AABBの衝突判定
-		bool isCollide = IsAABBSphereCollision(aabb, sphere);
+		bool isCollide = IsCollision(aabb, segment);
 
 		if (isCollide) {
 			color1 = RED;
@@ -104,10 +107,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(gridWVPMatrix, viewportMtrix);
 
-		DrawAABB(aabb, gridWVPMatrix, viewportMtrix, color1);
+		DrawAABB(aabb, aabbWVPMatrix, viewportMtrix, color1);
 
-		DrawSphere(sphere, gridWVPMatrix, viewportMtrix, color2);
-
+		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), color2);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
@@ -126,9 +128,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		aabb.max.z = (std::max)(aabb.min.z, aabb.max.z);
 		ImGui::End();
 
-		ImGui::Begin("Sphere");
-		ImGui::DragFloat3("center", &sphere.center.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat("radius", &sphere.radius, -0.01f, 0.0f, 10.0f);
+		ImGui::Begin("segment");
+		ImGui::DragFloat3("origin", &segment.origin.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("diff", &segment.diff.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
 

@@ -1,12 +1,4 @@
-#pragma once
-#define _USE_MATH_DEFINES
-
-#include <Novice.h>
-#include "Matrix4x4.h"
-#include "Vector3.h"
-#include"math.h"
-#include"cmath"
-#include"cassert"
+#include"MatrixFunc.h"
 
 const int kRowHeight = 20;
 const int kColumnWidth = 60;

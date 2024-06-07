@@ -14,6 +14,12 @@
     <Filter Include="KamataEngine\Adapter">
       <UniqueIdentifier>{c6468eb4-788b-4a83-b207-a5f4804e56c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cppFile">
+      <UniqueIdentifier>{893551de-7579-43b2-a95f-d392e8bf3a29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hetterFile">
+      <UniqueIdentifier>{f7ee0d1c-94e7-4218-9508-de727340588a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\DirectXCommon.cpp">
@@ -37,6 +43,15 @@
     </ClCompile>
     <ClCompile Include="C:\KamataEngine\DirectXGame\base\StringUtility.cpp">
       <Filter>KamataEngine\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="3DFunc.cpp">
+      <Filter>cppFile</Filter>
+    </ClCompile>
+    <ClCompile Include="MatrixFunc.cpp">
+      <Filter>cppFile</Filter>
+    </ClCompile>
+    <ClCompile Include="VectorFunc.cpp">
+      <Filter>cppFile</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -103,15 +118,29 @@
     <ClInclude Include="C:\KamataEngine\DirectXGame\3d\SpotLight.h">
       <Filter>KamataEngine\Include</Filter>
     </ClInclude>
-    <ClInclude Include="C:\KamataEngine\DirectXGame\math\Matrix4x4.h" />
-    <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector2.h" />
-    <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector3.h" />
-    <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector4.h" />
     <ClInclude Include="C:\KamataEngine\DirectXGame\base\StringUtility.h">
       <Filter>KamataEngine\Include</Filter>
     </ClInclude>
-    <ClInclude Include="Vector3Function.h" />
-    <ClInclude Include="3DFunction.h" />
-    <ClInclude Include="Matrix4x4Function.h" />
+    <ClInclude Include="3DFunc.h">
+      <Filter>hetterFile</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\KamataEngine\DirectXGame\math\Matrix4x4.h">
+      <Filter>hetterFile</Filter>
+    </ClInclude>
+    <ClInclude Include="MatrixFunc.h">
+      <Filter>hetterFile</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector2.h">
+      <Filter>hetterFile</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector3.h">
+      <Filter>hetterFile</Filter>
+    </ClInclude>
+    <ClInclude Include="VectorFunc.h">
+      <Filter>hetterFile</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector4.h">
+      <Filter>hetterFile</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

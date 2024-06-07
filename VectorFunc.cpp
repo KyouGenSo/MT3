@@ -1,22 +1,7 @@
-#pragma once
-#include<Vector3.h>
-#include<math.h>
-#include<Novice.h>
+#include"VectorFunc.h"
 
-struct Line {
-	Vector3 origin;
-	Vector3 diff;
-};
-
-struct Ray {
-	Vector3 origin;
-	Vector3 diff;
-};
-
-struct Segment {
-	Vector3 origin;
-	Vector3 diff;
-};
+const int kRowHeight = 20;
+const int kColumnWidth = 60;
 
 void Vector3ScreenPrint(int x, int y, Vector3 v, const char* string) {
 	Novice::ScreenPrintf(x, y, "%s", string);
@@ -64,5 +49,21 @@ Vector3 Project(const Vector3& v1, const Vector3& v2) {
 
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
-		return Add(segment.origin, project);
+	return Add(segment.origin, project);
+}
+
+Vector3 Max(const Vector3& v1, const Vector3& v2) {
+	if (v1.x > v2.x && v1.y > v2.y && v1.z > v2.z) {
+		return v1;
+	} else {
+		return v2;
+	}
+}
+
+Vector3 Min(const Vector3& v1, const Vector3& v2) {
+	if (v1.x < v2.x && v1.y < v2.y && v1.z < v2.z) {
+		return v1;
+	} else {
+		return v2;
+	}
 }
