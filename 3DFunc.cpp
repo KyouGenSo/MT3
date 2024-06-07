@@ -163,32 +163,60 @@ void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatri
 }
 
 void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
-	Vector3 points[12];
-	points[0] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.min.z))); // min
-	points[1] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.min.z)));
-	points[2] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.max.z)));
-	points[3] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.max.z)));
-	points[4] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.min.z)));
-	points[5] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.min.z)));
-	points[6] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.max.z))); // max
-	points[7] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.max.z)));
-	points[8] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.min.z)));
-	points[9] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.min.z)));
-	points[10] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.min.z)));
-	points[11] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.min.z)));
+	Vector3 vertices[8];
 
-	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[1].x), int(points[1].y), color);
-	Novice::DrawLine(int(points[1].x), int(points[1].y), int(points[2].x), int(points[2].y), color);
-	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[3].x), int(points[3].y), color);
-	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[0].x), int(points[0].y), color);
-	Novice::DrawLine(int(points[4].x), int(points[4].y), int(points[5].x), int(points[5].y), color);
-	Novice::DrawLine(int(points[5].x), int(points[5].y), int(points[6].x), int(points[6].y), color);
-	Novice::DrawLine(int(points[6].x), int(points[6].y), int(points[7].x), int(points[7].y), color);
-	Novice::DrawLine(int(points[7].x), int(points[7].y), int(points[4].x), int(points[4].y), color);
-	Novice::DrawLine(int(points[0].x), int(points[0].y), int(points[4].x), int(points[4].y), color);
-	Novice::DrawLine(int(points[1].x), int(points[1].y), int(points[5].x), int(points[5].y), color);
-	Novice::DrawLine(int(points[2].x), int(points[2].y), int(points[6].x), int(points[6].y), color);
-	Novice::DrawLine(int(points[3].x), int(points[3].y), int(points[7].x), int(points[7].y), color);
+	vertices[0] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.min.z)));
+	vertices[1] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.min.z)));
+	vertices[2] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.min.z)));
+	vertices[3] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.min.z)));
+	vertices[4] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.min.y, aabb.max.z)));
+	vertices[5] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.min.y, aabb.max.z)));
+	vertices[6] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.min.x, aabb.max.y, aabb.max.z)));
+	vertices[7] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Vector3(aabb.max.x, aabb.max.y, aabb.max.z)));
+
+	Novice::DrawLine(int(vertices[0].x), int(vertices[0].y), int(vertices[1].x), int(vertices[1].y), color);
+	Novice::DrawLine(int(vertices[1].x), int(vertices[1].y), int(vertices[3].x), int(vertices[3].y), color);
+	Novice::DrawLine(int(vertices[3].x), int(vertices[3].y), int(vertices[2].x), int(vertices[2].y), color);
+	Novice::DrawLine(int(vertices[2].x), int(vertices[2].y), int(vertices[0].x), int(vertices[0].y), color);
+	Novice::DrawLine(int(vertices[4].x), int(vertices[4].y), int(vertices[5].x), int(vertices[5].y), color);
+	Novice::DrawLine(int(vertices[5].x), int(vertices[5].y), int(vertices[7].x), int(vertices[7].y), color);
+	Novice::DrawLine(int(vertices[7].x), int(vertices[7].y), int(vertices[6].x), int(vertices[6].y), color);
+	Novice::DrawLine(int(vertices[6].x), int(vertices[6].y), int(vertices[4].x), int(vertices[4].y), color);
+	Novice::DrawLine(int(vertices[0].x), int(vertices[0].y), int(vertices[4].x), int(vertices[4].y), color);
+	Novice::DrawLine(int(vertices[1].x), int(vertices[1].y), int(vertices[5].x), int(vertices[5].y), color);
+	Novice::DrawLine(int(vertices[2].x), int(vertices[2].y), int(vertices[6].x), int(vertices[6].y), color);
+	Novice::DrawLine(int(vertices[3].x), int(vertices[3].y), int(vertices[7].x), int(vertices[7].y), color);
+}
+
+void DrawOBB(const OBB& obb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 vertices[8];
+
+	Vector3 extendX = Multiply(obb.axis[0], obb.size.x);
+	Vector3 extendY = Multiply(obb.axis[1], obb.size.y);
+	Vector3 extendZ = Multiply(obb.axis[2], obb.size.z);
+
+	vertices[0] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Subtract(obb.center, Subtract(extendX, Subtract(extendY, extendZ)))));
+	vertices[1] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Add(obb.center, Subtract(extendX, Subtract(extendY, extendZ)))));
+	vertices[2] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Subtract(obb.center, Subtract(extendX, Add(extendY, extendZ)))));
+	vertices[3] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Add(obb.center, Subtract(extendX, Add(extendY, extendZ)))));
+	vertices[4] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Subtract(obb.center, Add(extendX, Subtract(extendY, extendZ)))));
+	vertices[5] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Add(obb.center, Add(extendX, Subtract(extendY, extendZ)))));
+	vertices[6] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Subtract(obb.center, Add(extendX, Add(extendY, extendZ)))));
+	vertices[7] = Transform(viewportMatrix, Transform(viewProjectionMatrix, Add(obb.center, Add(extendX, Add(extendY, extendZ)))));
+
+	Novice::DrawLine(int(vertices[0].x), int(vertices[0].y), int(vertices[5].x), int(vertices[5].y), color);
+	Novice::DrawLine(int(vertices[0].x), int(vertices[0].y), int(vertices[2].x), int(vertices[2].y), color);
+	Novice::DrawLine(int(vertices[0].x), int(vertices[0].y), int(vertices[6].x), int(vertices[6].y), color);
+	Novice::DrawLine(int(vertices[4].x), int(vertices[4].y), int(vertices[1].x), int(vertices[1].y), color);
+	Novice::DrawLine(int(vertices[4].x), int(vertices[4].y), int(vertices[2].x), int(vertices[2].y), color);
+	Novice::DrawLine(int(vertices[4].x), int(vertices[4].y), int(vertices[6].x), int(vertices[6].y), color);
+	Novice::DrawLine(int(vertices[7].x), int(vertices[7].y), int(vertices[2].x), int(vertices[2].y), color);
+	Novice::DrawLine(int(vertices[7].x), int(vertices[7].y), int(vertices[5].x), int(vertices[5].y), color);
+	Novice::DrawLine(int(vertices[7].x), int(vertices[7].y), int(vertices[1].x), int(vertices[1].y), color);
+	Novice::DrawLine(int(vertices[3].x), int(vertices[3].y), int(vertices[1].x), int(vertices[1].y), color);
+	Novice::DrawLine(int(vertices[3].x), int(vertices[3].y), int(vertices[6].x), int(vertices[6].y), color);
+	Novice::DrawLine(int(vertices[3].x), int(vertices[3].y), int(vertices[5].x), int(vertices[5].y), color);
+
 }
 
 

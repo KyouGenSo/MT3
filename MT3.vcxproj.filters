@@ -142,5 +142,8 @@
     <ClInclude Include="C:\KamataEngine\DirectXGame\math\Vector4.h">
       <Filter>hetterFile</Filter>
     </ClInclude>
+    <ClInclude Include="Matrix3x3.h">
+      <Filter>hetterFile</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

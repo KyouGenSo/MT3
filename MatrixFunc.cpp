@@ -191,15 +191,14 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	return result;
 }
 
-
 Vector3 Transform(const Matrix4x4& m, const Vector3& v) {
 	Vector3 result;
 	float w;
 
-	result.x = m.m[0][0] * v.x + m.m[1][0] * v.y + m.m[2][0] * v.z + m.m[3][0];
-	result.y = m.m[0][1] * v.x + m.m[1][1] * v.y + m.m[2][1] * v.z + m.m[3][1];
-	result.z = m.m[0][2] * v.x + m.m[1][2] * v.y + m.m[2][2] * v.z + m.m[3][2];
-	w = m.m[0][3] * v.x + m.m[1][3] * v.y + m.m[2][3] * v.z + m.m[3][3];
+	result.x = m.m[0][0] * v.x + m.m[1][0] * v.y + m.m[2][0] * v.z + m.m[3][0] * 1.0f;
+	result.y = m.m[0][1] * v.x + m.m[1][1] * v.y + m.m[2][1] * v.z + m.m[3][1] * 1.0f;
+	result.z = m.m[0][2] * v.x + m.m[1][2] * v.y + m.m[2][2] * v.z + m.m[3][2] * 1.0f;
+	w = m.m[0][3] * v.x + m.m[1][3] * v.y + m.m[2][3] * v.z + m.m[3][3] * 1.0f;
 
 	assert(w != 0.0f);
 
@@ -229,7 +228,7 @@ Matrix4x4 MakePerspectiveMatrix(float fovY, float aspectRatio, float nearClip, f
 	result.m[2][0] = 0.0f;
 	result.m[2][1] = 0.0f;
 	result.m[2][2] = farClip / range;
-	result.m[2][3] = -1.0f;
+	result.m[2][3] = 1.0f;
 
 	result.m[3][0] = 0.0f;
 	result.m[3][1] = 0.0f;
