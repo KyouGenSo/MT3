@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char preKeys[256] = { 0 };
 
 	OBB obb{
-		.center = Vector3(0.0f, 0.0f, 0.0f),
+		.center = Vector3(-1.0f, 0.0f, 0.0f),
 		.axis = {
 			Vector3(1.0f, 0.0f, 0.0f),
 			Vector3(0.0f, 1.0f, 0.0f),
@@ -31,9 +31,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		.size = Vector3(0.5f, 0.5f, 0.5f)
 	};
 
-	Sphere sphere{
-		.center = Vector3(0.0f, 0.0f, 0.0f),
-		.radius = 0.5f
+	Segment segment{
+		.origin = Vector3(-0.8f, -0.3f, 0.0f),
+		.diff = Vector3(0.5f, 0.5f, 0.0f)
 	};
 
 	int color1 = WHITE;
@@ -44,10 +44,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
 
 	Vector3 obbRotate(0.0f, 0.0f, 0.0f);
-
-	Vector3 sphereScale(1.0f, 1.0f, 1.0f);
-	Vector3 sphereRotate(0.0f, 0.0f, 0.0f);
-	Vector3 sphereTranslate(0.0f, 0.0f, 0.0f);
 
 	Vector3 cameraPosition(0.0f, 1.9f, -6.49f);
 	Vector3 cameraRotation(0.26f, 0.0f, 0.0f);
@@ -61,14 +57,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 gridWorldMatrix;
 	Matrix4x4 gridWVPMatrix;
 
-	Matrix4x4 sphereWorldMatrix;
-	Matrix4x4 sphereWVPMatrix;
-
 	Matrix4x4 obbRotateMatrix;
 	Matrix4x4 obbTranslateMatrix;
 	Matrix4x4 obbWorldMatrix;
 	Matrix4x4 obbWorldMatrixInverse;
 	Matrix4x4 obbWVPMatrix;
+
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -89,9 +83,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, viewProjectionMatrix);
-
-		sphereWorldMatrix = MakeAffineMatrix(sphereScale, sphereRotate, sphereTranslate);
-		sphereWVPMatrix = Multiply(sphereWorldMatrix, viewProjectionMatrix);
 
 		obbRotateMatrix = Multiply(MakeRotateMatrixX(obbRotate.x), Multiply(MakeRotateMatrixY(obbRotate.y), MakeRotateMatrixZ(obbRotate.z)));
 
@@ -118,21 +109,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 衝突判定
 		obbWorldMatrixInverse = Inverse(obbWorldMatrix);
-		Vector3 sphereCenterInLocal = Transform(obbWorldMatrixInverse, sphere.center);
-		AABB aabbInOBBLocal;
-		aabbInOBBLocal.min.x = -obb.size.x;
-		aabbInOBBLocal.min.y = -obb.size.y;
-		aabbInOBBLocal.min.z = -obb.size.z;
-		aabbInOBBLocal.max.x = obb.size.x;
-		aabbInOBBLocal.max.y = obb.size.y;
-		aabbInOBBLocal.max.z = obb.size.z;
 
-		Sphere sphereInOBBLocal{
-			.center = sphereCenterInLocal,
-			.radius = sphere.radius
-		};
-
-		bool isCollide = IsCollision(aabbInOBBLocal, sphereInOBBLocal);
+		bool isCollide = IsCollision(obb, segment, obbWorldMatrixInverse);
 
 		if (isCollide) {
 			color1 = RED;
@@ -154,7 +132,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawOBB(obb, viewProjectionMatrix, viewportMtrix, color1);
 
-		DrawSphere(sphere, viewProjectionMatrix, viewportMtrix, color2);
+		DrawSegment(segment, viewProjectionMatrix, viewportMtrix, color2);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
@@ -168,9 +146,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Rotate", &obbRotate.x, -0.01f, 0.0f, 6.28f);
 		ImGui::End();
 
-		ImGui::Begin("Sphere");
-		ImGui::DragFloat3("Center", &sphere.center.x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat("Radius", &sphere.radius, -0.01f, 0.0f, 10.0f);
+		ImGui::Begin("Segment");
+		ImGui::DragFloat3("Origin", &segment.origin.x, -0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Diff", &segment.diff.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
 

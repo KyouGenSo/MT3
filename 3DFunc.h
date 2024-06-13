@@ -42,6 +42,8 @@ Vector3 Perpendicular(const Vector3& v);
 /// </summary>
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
@@ -69,3 +71,9 @@ bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 bool IsCollision(const AABB& aabb, const Sphere& sphere);
 
 bool IsCollision(const AABB& aabb, const Segment& segment);
+
+bool IsCollision(const OBB& obb, const Segment& segment, const Matrix4x4& obbInverse);
+
+bool IsCollision(const OBB& obb, const Ray& ray, const Matrix4x4& obbInverse);
+
+bool IsCollision(const OBB& obb, const Line& line, const Matrix4x4& obbInverse);

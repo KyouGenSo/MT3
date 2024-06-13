@@ -90,6 +90,15 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 	}
 }
 
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+
+	Vector3 start = Transform(viewportMatrix, Transform(viewProjectionMatrix, segment.origin));
+	Vector3 end = Transform(viewportMatrix, Transform(viewProjectionMatrix, Add(segment.origin, segment.diff)));
+
+	Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), color);
+
+}
+
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	const uint32_t kSubdivision = 20; // 1分割数
 	const float kLonEvery = 2.0f * 3.14159265359f / float(kSubdivision); // 経度の1分割の角度 phi
@@ -377,4 +386,59 @@ bool IsCollision(const AABB& aabb, const Segment& segment) {
 	}
 
 	return false;
+}
+
+bool IsCollision(const OBB& obb, const Segment& segment,const Matrix4x4& obbInverse) {
+
+	Vector3 localOrigin = Transform(obbInverse, segment.origin);
+	Vector3 localEnd = Transform(obbInverse, Add(segment.origin, segment.diff));
+
+	AABB localAABB = {
+		.min = { -obb.size.x, -obb.size.y, -obb.size.z },
+		.max = { obb.size.x, obb.size.y, obb.size.z }
+	};
+
+	Segment localSegment = {
+		.origin = localOrigin,
+		.diff = Subtract(localEnd, localOrigin)
+	};
+
+	return IsCollision(localAABB, localSegment);
+
+}
+
+bool IsCollision(const OBB& obb, const Ray& ray, const Matrix4x4& obbInverse) {
+
+	Vector3 localOrigin = Transform(obbInverse, ray.origin);
+	Vector3 localEnd = Transform(obbInverse, Add(ray.origin, ray.diff));
+
+	AABB localAABB = {
+		.min = { -obb.size.x, -obb.size.y, -obb.size.z },
+		.max = { obb.size.x, obb.size.y, obb.size.z }
+	};
+
+	Segment localSegment = {
+		.origin = localOrigin,
+		.diff = Subtract(localEnd, localOrigin)
+	};
+
+	return IsCollision(localAABB, localSegment);
+}
+
+bool IsCollision(const OBB& obb, const Line& line, const Matrix4x4& obbInverse) {
+
+	Vector3 localOrigin = Transform(obbInverse, line.origin);
+	Vector3 localEnd = Transform(obbInverse, Add(line.origin, line.diff));
+
+	AABB localAABB = {
+		.min = { -obb.size.x, -obb.size.y, -obb.size.z },
+		.max = { obb.size.x, obb.size.y, obb.size.z }
+	};
+
+	Segment localSegment = {
+		.origin = localOrigin,
+		.diff = Subtract(localEnd, localOrigin)
+	};
+
+	return IsCollision(localAABB, localSegment);
 }
