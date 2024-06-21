@@ -475,7 +475,7 @@ bool IsCollision(const OBB& obb1, const OBB& obb2) {
 	obb2Sides[1] = Multiply(obb2.axis[1], obb2.size.y);
 	obb2Sides[2] = Multiply(obb2.axis[2], obb2.size.z);
 
-	// すべての頂点を分離軸（面法線,各辺の組み合わせのクロス積）に対して射影して判定する
+	// すべての頂点を分離軸（面法線）に対して射影して判定する
 	for (int i = 0; i < 3; i++) {
 		Vector3 axis = obb1.axis[i];
 		float min1 = INFINITY;
