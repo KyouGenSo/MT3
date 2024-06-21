@@ -77,3 +77,5 @@ bool IsCollision(const OBB& obb, const Segment& segment, const Matrix4x4& obbInv
 bool IsCollision(const OBB& obb, const Ray& ray, const Matrix4x4& obbInverse);
 
 bool IsCollision(const OBB& obb, const Line& line, const Matrix4x4& obbInverse);
+
+bool IsCollision(const OBB& obb1, const OBB& obb2);

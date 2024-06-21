@@ -442,3 +442,102 @@ bool IsCollision(const OBB& obb, const Line& line, const Matrix4x4& obbInverse) 
 
 	return IsCollision(localAABB, localSegment);
 }
+
+bool IsCollision(const OBB& obb1, const OBB& obb2) {
+	Vector3 obb1Vertices[8];
+	Vector3 obb2Vertices[8];
+	Vector3 obb1Sides[3];
+	Vector3 obb2Sides[3];
+
+	obb1Vertices[0] = Subtract(obb1.center, Subtract(Multiply(obb1.axis[0], obb1.size.x), Subtract(Multiply(obb1.axis[1], obb1.size.y), Multiply(obb1.axis[2], obb1.size.z))));
+	obb1Vertices[1] = Add(obb1.center, Subtract(Multiply(obb1.axis[0], obb1.size.x), Subtract(Multiply(obb1.axis[1], obb1.size.y), Multiply(obb1.axis[2], obb1.size.z))));
+	obb1Vertices[2] = Subtract(obb1.center, Subtract(Multiply(obb1.axis[0], obb1.size.x), Subtract(Multiply(obb1.axis[1], obb1.size.y), Multiply(obb1.axis[2], obb1.size.z))));
+	obb1Vertices[3] = Add(obb1.center, Subtract(Multiply(obb1.axis[0], obb1.size.x), Subtract(Multiply(obb1.axis[1], obb1.size.y), Multiply(obb1.axis[2], obb1.size.z))));
+	obb1Vertices[4] = Subtract(obb1.center, Add(Multiply(obb1.axis[0], obb1.size.x), Subtract(Multiply(obb1.axis[1], obb1.size.y), Multiply(obb1.axis[2], obb1.size.z))));
+	obb1Vertices[5] = Add(obb1.center, Add(Multiply(obb1.axis[0], obb1.size.x), Subtract(Multiply(obb1.axis[1], obb1.size.y), Multiply(obb1.axis[2], obb1.size.z))));
+	obb1Vertices[6] = Subtract(obb1.center, Add(Multiply(obb1.axis[0], obb1.size.x), Add(Multiply(obb1.axis[1], obb1.size.y), Multiply(obb1.axis[2], obb1.size.z))));
+	obb1Vertices[7] = Add(obb1.center, Add(Multiply(obb1.axis[0], obb1.size.x), Add(Multiply(obb1.axis[1], obb1.size.y), Multiply(obb1.axis[2], obb1.size.z))));
+
+	obb2Vertices[0] = Subtract(obb2.center, Subtract(Multiply(obb2.axis[0], obb2.size.x), Subtract(Multiply(obb2.axis[1], obb2.size.y), Multiply(obb2.axis[2], obb2.size.z))));
+	obb2Vertices[1] = Add(obb2.center, Subtract(Multiply(obb2.axis[0], obb2.size.x), Subtract(Multiply(obb2.axis[1], obb2.size.y), Multiply(obb2.axis[2], obb2.size.z))));
+	obb2Vertices[2] = Subtract(obb2.center, Subtract(Multiply(obb2.axis[0], obb2.size.x), Subtract(Multiply(obb2.axis[1], obb2.size.y), Multiply(obb2.axis[2], obb2.size.z))));
+	obb2Vertices[3] = Add(obb2.center, Subtract(Multiply(obb2.axis[0], obb2.size.x), Subtract(Multiply(obb2.axis[1], obb2.size.y), Multiply(obb2.axis[2], obb2.size.z))));
+	obb2Vertices[4] = Subtract(obb2.center, Add(Multiply(obb2.axis[0], obb2.size.x), Subtract(Multiply(obb2.axis[1], obb2.size.y), Multiply(obb2.axis[2], obb2.size.z))));
+	obb2Vertices[5] = Add(obb2.center, Add(Multiply(obb2.axis[0], obb2.size.x), Subtract(Multiply(obb2.axis[1], obb2.size.y), Multiply(obb2.axis[2], obb2.size.z))));
+	obb2Vertices[6] = Subtract(obb2.center, Add(Multiply(obb2.axis[0], obb2.size.x), Add(Multiply(obb2.axis[1], obb2.size.y), Multiply(obb2.axis[2], obb2.size.z))));
+	obb2Vertices[7] = Add(obb2.center, Add(Multiply(obb2.axis[0], obb2.size.x), Add(Multiply(obb2.axis[1], obb2.size.y), Multiply(obb2.axis[2], obb2.size.z))));
+
+	obb1Sides[0] = Multiply(obb1.axis[0], obb1.size.x);
+	obb1Sides[1] = Multiply(obb1.axis[1], obb1.size.y);
+	obb1Sides[2] = Multiply(obb1.axis[2], obb1.size.z);
+
+	obb2Sides[0] = Multiply(obb2.axis[0], obb2.size.x);
+	obb2Sides[1] = Multiply(obb2.axis[1], obb2.size.y);
+	obb2Sides[2] = Multiply(obb2.axis[2], obb2.size.z);
+
+	// すべての頂点を分離軸（面法線,各辺の組み合わせのクロス積）に対して射影して判定する
+	for (int i = 0; i < 3; i++) {
+		Vector3 axis = obb1.axis[i];
+		float min1 = INFINITY;
+		float max1 = -INFINITY;
+		float min2 = INFINITY;
+		float max2 = -INFINITY;
+		float L1, L2;
+
+		for (int j = 0; j < 8; j++) {
+			float projection = Dot(obb1Vertices[j], axis);
+			min1 = (std::min)(min1, projection);
+			max1 = (std::max)(max1, projection);
+		}
+
+		for (int j = 0; j < 8; j++) {
+			float projection = Dot(obb2Vertices[j], axis);
+			min2 = (std::min)(min2, projection);
+			max2 = (std::max)(max2, projection);
+		}
+
+		L1 = max1 - min1;
+		L2 = max2 - min2;
+		float sumSpan = L1 + L2;
+		float longSpan = (std::max)(max1, max2) - (std::min)(min1, min2);
+
+		if (sumSpan < longSpan) {
+			return false;
+		}
+	}
+
+	// すべての頂点を分離軸（各辺の組み合わせのクロス積）に対して射影して判定する
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			Vector3 axis = Cross(obb1Sides[i], obb2Sides[j]);
+			float min1 = INFINITY;
+			float max1 = -INFINITY;
+			float min2 = INFINITY;
+			float max2 = -INFINITY;
+			float L1, L2;
+
+			for (int k = 0; k < 8; k++) {
+				float projection = Dot(obb1Vertices[k], axis);
+				min1 = (std::min)(min1, projection);
+				max1 = (std::max)(max1, projection);
+			}
+
+			for (int k = 0; k < 8; k++) {
+				float projection = Dot(obb2Vertices[k], axis);
+				min2 = (std::min)(min2, projection);
+				max2 = (std::max)(max2, projection);
+			}
+
+			L1 = max1 - min1;
+			L2 = max2 - min2;
+			float sumSpan = L1 + L2;
+			float longSpan = (std::max)(max1, max2) - (std::min)(min1, min2);
+
+			if (sumSpan < longSpan) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
