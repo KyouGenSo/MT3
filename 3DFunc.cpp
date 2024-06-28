@@ -1,4 +1,5 @@
 ﻿#include"3Dfunc.h"
+#include"VectorFunc.h"
 
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys) {
 
@@ -225,6 +226,21 @@ void DrawOBB(const OBB& obb, const Matrix4x4& viewProjectionMatrix, const Matrix
 	Novice::DrawLine(int(vertices[3].x), int(vertices[3].y), int(vertices[1].x), int(vertices[1].y), color);
 	Novice::DrawLine(int(vertices[3].x), int(vertices[3].y), int(vertices[6].x), int(vertices[6].y), color);
 	Novice::DrawLine(int(vertices[3].x), int(vertices[3].y), int(vertices[5].x), int(vertices[5].y), color);
+
+}
+
+void DrawBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	const uint32_t kSubdivision = 50; // 分割数
+	const float kEvery = 1.0f / float(kSubdivision); // 1分割の長さ
+
+	Vector3 points[2];
+	points[0] = p0;
+	for (uint32_t i = 1; i <= kSubdivision; i++) {
+		float t = kEvery * float(i);
+		points[1] = Lerp(Lerp(p0, p1, t), Lerp(p1, p2, t), t);
+		DrawSegment({ points[0], Subtract(points[1], points[0]) }, viewProjectionMatrix, viewportMatrix, color);
+		points[0] = points[1];
+	}
 
 }
 
