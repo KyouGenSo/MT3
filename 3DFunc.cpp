@@ -244,6 +244,21 @@ void DrawBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const M
 
 }
 
+void DrawCatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	const uint32_t kSubdivision = 50; // 分割数
+	const float kEvery = 1.0f / float(kSubdivision); // 1分割の長さ
+
+	Vector3 points[2];
+	points[0] = p1;
+	for (uint32_t i = 1; i <= kSubdivision; i++) {
+		float t = kEvery * float(i);
+		points[1] = CatmullRom(p0, p1, p2, p3, t);
+		DrawSegment({ points[0], Subtract(points[1], points[0]) }, viewProjectionMatrix, viewportMatrix, color);
+		points[0] = points[1];
+	}
+
+}
+
 
 /// <summary>
 /// 衝突判定関数

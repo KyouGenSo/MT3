@@ -71,3 +71,7 @@ Vector3 Min(const Vector3& v1, const Vector3& v2) {
 Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
 	return Add(Multiply(v1, 1 - t), Multiply(v2, t));
 }
+
+Vector3 CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t) {
+	return ((p0 * -1.0f + p1 * 3.0f - p2 * 3.0f + p3) * t * t * t + (p0 * 2.0f - p1 * 5.0f + p2 * 4.0f - p3) * t * t + (p0 * -1.0f + p2) * t + p1 * 2.0f) * 0.5f;
+}
