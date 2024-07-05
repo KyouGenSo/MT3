@@ -84,24 +84,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWVPMatrix = Multiply(gridWorldMatrix, viewProjectionMatrix);
 
 		if (keys[DIK_Q] && !preKeys[DIK_Q]) {
-			p1.velocity.y -= 5.0f;
+			p1.velocity_.y -= 5.0f;
 		}
 
-		Vector3 diff = p1.position - s1.anchor;
+		Vector3 diff = p1.position_ - s1.anchor;
 		float length = float(Length(diff));
 		if (length != 0.0f) {
 			Vector3 dir = Normalize(diff);
 			Vector3 restPos = s1.anchor + dir * s1.natrualLength;
-			Vector3 diplacement = (p1.position - restPos) * length;
+			Vector3 diplacement = (p1.position_ - restPos) * length;
 			Vector3 restoringForce = diplacement * -s1.stiffness;
-			Vector3 dampingForce = p1.velocity * -s1.damping;
-			Vector3 gravityForce = kGravity * p1.mass;
+			Vector3 dampingForce = p1.velocity_ * -s1.damping;
+			Vector3 gravityForce = kGravity * p1.mass_;
 			Vector3 totalForce = restoringForce + dampingForce + gravityForce;
-			p1.Acceleration = totalForce / p1.mass;
+			p1.Acceleration = totalForce / p1.mass_;
 		}
 
-		p1.velocity += p1.Acceleration * deltaTime;
-		p1.position += p1.velocity * deltaTime;
+		p1.velocity_ += p1.Acceleration * deltaTime;
+		p1.position_ += p1.velocity_ * deltaTime;
 
 		///-------------------///
 		/// ↑更新処理ここまで///
@@ -115,9 +115,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMtrix);
 
-		DrawSphere(Sphere(p1.position, p1.radius), viewProjectionMatrix, viewportMtrix, p1.color);
+		DrawSphere(Sphere(p1.position_, p1.radius_), viewProjectionMatrix, viewportMtrix, p1.color);
 
-		DrawSegment(Segment(s1.anchor, p1.position - s1.anchor), viewProjectionMatrix, viewportMtrix, color1);
+		DrawSegment(Segment(s1.anchor, p1.position_ - s1.anchor), viewProjectionMatrix, viewportMtrix, color1);
 
 
 		ImGui::Begin("options");
@@ -130,10 +130,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("MassPoint")) {
-				ImGui::DragFloat3("Position", &p1.position.x, -0.01f, -10.0f, 10.0f);
-				ImGui::DragFloat3("Velocity", &p1.velocity.x, -0.01f, -10.0f, 10.0f);
-				ImGui::DragFloat("Mass", &p1.mass, -0.01f, 0.01f, 10.0f);
-				ImGui::DragFloat("Radius", &p1.radius, -0.01f, 0.01f, 10.0f);
+				ImGui::DragFloat3("Position", &p1.position_.x, -0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat3("Velocity", &p1.velocity_.x, -0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat("Mass", &p1.mass_, -0.01f, 0.01f, 10.0f);
+				ImGui::DragFloat("Radius", &p1.radius_, -0.01f, 0.01f, 10.0f);
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Spring")) {

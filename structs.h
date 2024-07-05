@@ -42,11 +42,11 @@ struct OBB {
 };
 
 struct MassPoint {
-	Vector3 position;
-	Vector3 velocity;
+	Vector3 position_;
+	Vector3 velocity_;
 	Vector3 Acceleration;
-	float mass;
-	float radius;
+	float mass_;
+	float radius_;
 	unsigned int color;
 };
 
