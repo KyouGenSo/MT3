@@ -2,21 +2,7 @@
 #include<Vector3.h>
 #include<math.h>
 #include<Novice.h>
-
-struct Line {
-	Vector3 origin;
-	Vector3 diff;
-};
-
-struct Ray {
-	Vector3 origin;
-	Vector3 diff;
-};
-
-struct Segment {
-	Vector3 origin;
-	Vector3 diff;
-};
+#include<structs.h>
 
 void Vector3ScreenPrint(int x, int y, Vector3 v, const char* string);
 
