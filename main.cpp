@@ -8,6 +8,8 @@
 
 const char kWindowTitle[] = "LE2A_10_キョウ_ゲンソ";
 
+const float deltaTime = 1.0f / 60.0f;
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -21,11 +23,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Vector3 controlPoints[4] = {
-		Vector3(-0.8f, 0.58f, 1.0f),
-		Vector3(1.76f, 1.0f, -0.3f),
-		Vector3(0.95f, -0.7f, 2.3f),
-		Vector3(-0.53f, -0.26f, -0.15f)
+	MassPoint p1{
+		Vector3(1.2f, 0.0f, 0.0f),
+		Vector3(0.0f, 0.0f, 0.0f),
+		Vector3(0.0f, 0.0f, 0.0f),
+		2.0f,
+		0.05f,
+		BLUE
+	};
+
+	Spring s1{
+		Vector3(0.0f, 0.0f, 0.0f),
+		1.0f,
+		100.0f,
+		2.0f
 	};
 
 	int color1 = WHITE;
@@ -33,7 +44,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 gridScale(1.0f, 1.0f, 1.0f);
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
 	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
-
 
 	Vector3 cameraPosition(0.0f, 1.9f, -6.49f);
 	Vector3 cameraRotation(0.26f, 0.0f, 0.0f);
@@ -71,8 +81,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, viewProjectionMatrix);
 
+		if (keys[DIK_Q] && !preKeys[DIK_Q]) {
+			p1.velocity.x += 5.0f;
+		}
 
+		Vector3 diff = p1.position - s1.anchor;
+		float length = float(Length(diff));
+		if (length > 0.0f) {
+			Vector3 dir = Normalize(diff);
+			Vector3 restPos = s1.anchor + dir * s1.natrualLength;
+			Vector3 diplacement = (p1.position - restPos) * length;
+			Vector3 restoringForce = diplacement * -s1.stiffness;
+			Vector3 dampingForce = p1.velocity * -s1.damping;
+			Vector3 force = restoringForce + dampingForce;
+			p1.Acceleration = force / p1.mass;
+		}
 
+		p1.velocity += p1.Acceleration * deltaTime;
+		p1.position += p1.velocity * deltaTime;
 
 		///-------------------///
 		/// ↑更新処理ここまで///
@@ -86,31 +112,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMtrix);
 
-		DrawCatmullRom(controlPoints[0], controlPoints[0], controlPoints[1], controlPoints[2], viewProjectionMatrix, viewportMtrix, color1);
+		DrawSphere(p1, viewProjectionMatrix, viewportMtrix);
 
-		DrawCatmullRom(controlPoints[0], controlPoints[1], controlPoints[2], controlPoints[3], viewProjectionMatrix, viewportMtrix, color1);
+		DrawSegment(Segment(s1.anchor, p1.position), viewProjectionMatrix, viewportMtrix, color1);
 
-		DrawCatmullRom(controlPoints[1], controlPoints[2], controlPoints[3], controlPoints[3], viewProjectionMatrix, viewportMtrix, color1);
 
-		DrawSphere(Sphere(controlPoints[0], 0.01f), viewProjectionMatrix, viewportMtrix, BLACK);
+		ImGui::Begin("options");
 
-		DrawSphere(Sphere(controlPoints[1], 0.01f), viewProjectionMatrix, viewportMtrix, BLACK);
-
-		DrawSphere(Sphere(controlPoints[2], 0.01f), viewProjectionMatrix, viewportMtrix, BLACK);
-
-		DrawSphere(Sphere(controlPoints[3], 0.01f), viewProjectionMatrix, viewportMtrix, BLACK);
-
-		ImGui::Begin("Grid");
-		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
-		ImGui::DragFloat3("Rotate", &gridRotate.x, -0.01f, 0.0f, 6.28f);
-		ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
-		ImGui::End();
-
-		ImGui::Begin("CatmullRom");
-		ImGui::DragFloat3("Control Point 1", &controlPoints[0].x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Control Point 2", &controlPoints[1].x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Control Point 3", &controlPoints[2].x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Control Point 4", &controlPoints[3].x, -0.01f, -10.0f, 10.0f);
+		if (ImGui::BeginTabBar("TabBar")) {
+			if (ImGui::BeginTabItem("Grid")) {
+				ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
+				ImGui::DragFloat3("Rotate", &gridRotate.x, -0.01f, 0.0f, 6.28f);
+				ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("MassPoint")) {
+				ImGui::DragFloat3("Position", &p1.position.x, -0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat3("Velocity", &p1.velocity.x, -0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat("Mass", &p1.mass, -0.01f, 0.0f, 10.0f);
+				ImGui::DragFloat("Radius", &p1.radius, -0.01f, 0.0f, 10.0f);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Spring")) {
+				ImGui::DragFloat3("Anchor", &s1.anchor.x, -0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat("NatrualLength", &s1.natrualLength, -0.01f, 0.0f, 10.0f);
+				ImGui::DragFloat("Stiffness", &s1.stiffness, -0.01f, 0.0f, 10.0f);
+				ImGui::DragFloat("Damping", &s1.damping, -0.01f, 0.0f, 10.0f);
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
 		ImGui::End();
 
 

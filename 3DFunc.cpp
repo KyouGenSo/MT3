@@ -140,6 +140,46 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 	}
 }
 
+void DrawSphere(const MassPoint mp, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
+	const uint32_t kSubdivision = 20; // 1分割数
+	const float kLonEvery = 2.0f * 3.14159265359f / float(kSubdivision); // 経度の1分割の角度 phi
+	const float kLatEvery = 3.14159265359f / float(kSubdivision); // 緯度の1分割の角度 theta
+
+	// 緯度方向のループ
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
+		float lat = -3.14159265359f / 2.0f + kLatEvery * float(latIndex);
+		// 経度方向のループ
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
+			float lon = kLonEvery * float(lonIndex);
+			// 球の表面上の点を求める
+			Vector3 a, b, c;
+			a.x = mp.position.x + mp.radius * cosf(lat) * cosf(lon);
+			a.y = mp.position.y + mp.radius * sinf(lat);
+			a.z = mp.position.z + mp.radius * cosf(lat) * sinf(lon);
+			b.x = mp.position.x + mp.radius * cosf(lat + kLatEvery) * cosf(lon);
+			b.y = mp.position.y + mp.radius * sinf(lat + kLatEvery);
+			b.z = mp.position.z + mp.radius * cosf(lat + kLatEvery) * sinf(lon);
+			c.x = mp.position.x + mp.radius * cosf(lat) * cosf(lon + kLonEvery);
+			c.y = mp.position.y + mp.radius * sinf(lat);
+			c.z = mp.position.z + mp.radius * cosf(lat) * sinf(lon + kLonEvery);
+
+			// スクリーン座標系まで変換をかける
+			Vector3 screenA = Transform(viewProjectionMatrix, a);
+			Vector3 screenB = Transform(viewProjectionMatrix, b);
+			Vector3 screenC = Transform(viewProjectionMatrix, c);
+
+			// スクリーン座標系からビューポート座標系に変換をかける
+			screenA = Transform(viewportMatrix, screenA);
+			screenB = Transform(viewportMatrix, screenB);
+			screenC = Transform(viewportMatrix, screenC);
+
+			// ライン描画
+			Novice::DrawLine(int(screenA.x), int(screenA.y), int(screenB.x), int(screenB.y), mp.color);
+			Novice::DrawLine(int(screenB.x), int(screenB.y), int(screenC.x), int(screenC.y), mp.color);
+		}
+	}
+}
+
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	Vector3 center = Multiply(plane.normal, plane.distance);
 	Vector3 perpendiculars[4];

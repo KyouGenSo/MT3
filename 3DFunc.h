@@ -6,31 +6,7 @@
 #include<MatrixFunc.h>
 #include<math.h>
 #include"algorithm"
-
-struct Sphere {
-	Vector3 center;
-	float radius;
-};
-
-struct Plane {
-	Vector3 normal;
-	float distance;
-};
-
-struct Triangle {
-	Vector3 vertex[3];
-};
-
-struct AABB {
-	Vector3 min;
-	Vector3 max;
-};
-
-struct OBB {
-	Vector3 center;
-	Vector3 axis[3];
-	Vector3 size;
-};
+#include"structs.h"
 
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys);
 
@@ -45,6 +21,8 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+
+void DrawSphere(const MassPoint mp, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
 
