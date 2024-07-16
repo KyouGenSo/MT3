@@ -25,13 +25,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool isStart = false;
 
-	float radius = 0.8f;
-	float angle = 0.0f;
-	float angularVelocity = 3.14f;
+	Pendulum pendulum;
+	pendulum.anchor = Vector3(0.0f, 1.0f, 0.0f);
+	pendulum.length = 0.8f;
+	pendulum.angle = 0.9f;
+	pendulum.angularVelocity = 0.0f;
+	pendulum.angularAcceleration = 0.0f;
 
 	Sphere sphere;
 	sphere.center = Vector3(0.0f, 0.0f, 0.0f);
 	sphere.radius = 0.05f;
+
+	Segment segment;
 
 	int color1 = WHITE;
 
@@ -77,12 +82,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		if (isStart) {
-			angle += angularVelocity * kDeltaTime;
-			sphere.center.x = cos(angle) * radius;
-			sphere.center.y = sin(angle) * radius;
-			sphere.center.z = 0.0f;
+			pendulum.angularAcceleration = -(9.8f / pendulum.length) * sinf(pendulum.angle);
+			pendulum.angularVelocity += pendulum.angularAcceleration * kDeltaTime;
+			pendulum.angle += pendulum.angularVelocity * kDeltaTime;
 		}
 
+		sphere.center = pendulum.anchor + Vector3(sinf(pendulum.angle) * pendulum.length, -cosf(pendulum.angle) * pendulum.length, 0.0f);
+
+		segment.origin = pendulum.anchor;
+		segment.diff = sphere.center - pendulum.anchor;
 
 		///-------------------///
 		/// ↑更新処理ここまで///
@@ -98,6 +106,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawSphere(sphere, viewProjectionMatrix, viewportMtrix, color1);
 
+		DrawSegment(segment, viewProjectionMatrix, viewportMtrix, color1);
+
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
 		ImGui::DragFloat3("Rotate", &gridRotate.x, -0.01f, 0.0f, 6.28f);
@@ -111,6 +121,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::Button("Stop")) {
 			isStart = false;
 		}
+		// angle
+		ImGui::DragFloat("angle", &pendulum.angle, 0.01f, -3.14f, 3.14f);
 		ImGui::End();
 
 		///-------------------///

@@ -32,6 +32,14 @@ struct OBB {
 	Vector3 size;
 };
 
+struct Pendulum {
+	Vector3 anchor;
+	float length;
+	float angle;
+	float angularVelocity;
+	float angularAcceleration;
+};
+
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys);
 
 Vector3 Perpendicular(const Vector3& v);
