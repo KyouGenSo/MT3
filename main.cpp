@@ -21,13 +21,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
+	const float kDeltaTime = 1.0f / 60.0f;
+
+	bool isStart = false;
+
+	float radius = 0.8f;
+	float angle = 0.0f;
+	float angularVelocity = 3.14f;
+
+	Sphere sphere;
+	sphere.center = Vector3(0.0f, 0.0f, 0.0f);
+	sphere.radius = 0.05f;
 
 	int color1 = WHITE;
 
 	Vector3 gridScale(1.0f, 1.0f, 1.0f);
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
 	Vector3 gridTranslate(0.0f, 0.0f, 0.0f);
-
 
 	Vector3 cameraPosition(0.0f, 1.9f, -6.49f);
 	Vector3 cameraRotation(0.26f, 0.0f, 0.0f);
@@ -66,6 +76,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWVPMatrix = Multiply(gridWorldMatrix, viewProjectionMatrix);
 
 
+		if (isStart) {
+			angle += angularVelocity * kDeltaTime;
+			sphere.center.x = cos(angle) * radius;
+			sphere.center.y = sin(angle) * radius;
+			sphere.center.z = 0.0f;
+		}
 
 
 		///-------------------///
@@ -80,6 +96,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMtrix);
 
+		DrawSphere(sphere, viewProjectionMatrix, viewportMtrix, color1);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
@@ -87,7 +104,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
-
+		ImGui::Begin("window");
+		if (ImGui::Button("Start")) {
+			isStart = true;
+		}
+		if (ImGui::Button("Stop")) {
+			isStart = false;
+		}
+		ImGui::End();
 
 		///-------------------///
 		/// ↑描画処理ここまで///
