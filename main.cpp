@@ -21,11 +21,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	Vector3 controlPoints[3] = {
-		Vector3(-0.8f, 0.58f, 1.0f),
-		Vector3(1.76f, 1.0f, -0.3f),
-		Vector3(0.95f, -0.7f, 2.3f)
-	};
 
 	int color1 = WHITE;
 
@@ -85,13 +80,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMtrix);
 
-		DrawBezier(controlPoints[0], controlPoints[1], controlPoints[2], viewProjectionMatrix, viewportMtrix, color1);
-
-		DrawSphere(Sphere(controlPoints[0], 0.01f), viewProjectionMatrix, viewportMtrix, BLACK);
-
-		DrawSphere(Sphere(controlPoints[1], 0.01f), viewProjectionMatrix, viewportMtrix, BLACK);
-
-		DrawSphere(Sphere(controlPoints[2], 0.01f), viewProjectionMatrix, viewportMtrix, BLACK);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
@@ -99,11 +87,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
-		ImGui::Begin("Bezier");
-		ImGui::DragFloat3("Control Point 1", &controlPoints[0].x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Control Point 2", &controlPoints[1].x, -0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Control Point 3", &controlPoints[2].x, -0.01f, -10.0f, 10.0f);
-		ImGui::End();
 
 
 		///-------------------///
