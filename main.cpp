@@ -21,8 +21,39 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
+	Vector3 translate[3] = { 
+		Vector3(0.2f, 1.0f, 0.0f), 
+		Vector3(0.4f, 0.0f, 0.0f), 
+		Vector3(0.3f, 0.0f, 0.0f) 
+	};
 
-	int color1 = WHITE;
+	Vector3 rotate[3] = {
+	Vector3(0.0f, 0.0f, -6.8f),
+	Vector3(0.0f, 0.0f, -1.4f),
+	Vector3(0.0f, 0.0f, 0.0f)
+	};
+
+	Vector3 scale[3] = {
+		Vector3(1.0f, 1.0f, 1.0f),
+		Vector3(1.0f, 1.0f, 1.0f),
+		Vector3(1.0f, 1.0f, 1.0f)
+	};
+
+	Sphere sphere[3];
+	sphere[0].center = Vector3(0.0f, 0.0f, 0.0f);
+	sphere[0].radius = 0.05f;
+	sphere[1].center = Vector3(0.0f, 0.0f, 0.0f);
+	sphere[1].radius = 0.05f;
+	sphere[2].center = Vector3(0.0f, 0.0f, 0.0f);
+	sphere[2].radius = 0.05f;
+
+	Segment segment[2];
+
+	Matrix4x4 worldMatrix[3];
+
+	int color1 = RED;
+	int color2 = GREEN;
+	int color3 = BLUE; 
 
 	Vector3 gridScale(1.0f, 1.0f, 1.0f);
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
@@ -65,8 +96,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, viewProjectionMatrix);
 
+		// ワールド行列の計算
+		worldMatrix[0] = MakeAffineMatrix(scale[0], rotate[0], translate[0]);
+		worldMatrix[1] = MakeAffineMatrix(scale[1], rotate[1], translate[1]);
+		worldMatrix[1] = Multiply(worldMatrix[1], worldMatrix[0]);
+		worldMatrix[2] = MakeAffineMatrix(scale[2], rotate[2], translate[2]);
+		worldMatrix[2] = Multiply(worldMatrix[2], worldMatrix[1]);
 
+		// ワールド行列とビュープロジェクション行列を掛け合わせる
+		Matrix4x4 wvpMatrix[3];
+		wvpMatrix[0] = Multiply(worldMatrix[0], viewProjectionMatrix);
+		wvpMatrix[1] = Multiply(worldMatrix[1], viewProjectionMatrix);
+		wvpMatrix[2] = Multiply(worldMatrix[2], viewProjectionMatrix);
 
+		// 球の間に線を引く
+		segment[0].origin = Transform(worldMatrix[0], sphere[0].center);
+		segment[0].diff = Transform(worldMatrix[1], sphere[1].center) - segment[0].origin;
+		segment[1].origin = Transform(worldMatrix[1], sphere[1].center);
+		segment[1].diff = Transform(worldMatrix[2], sphere[2].center) - segment[1].origin;
 
 		///-------------------///
 		/// ↑更新処理ここまで///
@@ -80,6 +127,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMtrix);
 
+		DrawSphere(sphere[0], wvpMatrix[0], viewportMtrix, color1);
+		DrawSphere(sphere[1], wvpMatrix[1], viewportMtrix, color2);
+		DrawSphere(sphere[2], wvpMatrix[2], viewportMtrix, color3);
+
+		DrawSegment(segment[0], viewProjectionMatrix, viewportMtrix, WHITE);
+		DrawSegment(segment[1], viewProjectionMatrix, viewportMtrix, WHITE);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
@@ -87,7 +140,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("Translate", &gridTranslate.x, -0.01f, -10.0f, 10.0f);
 		ImGui::End();
 
-
+		ImGui::Begin("Sphere");
+		if (ImGui::BeginTabBar("Sphere")) {
+			if (ImGui::BeginTabItem("Sphere1")) {
+				ImGui::DragFloat3("Translate", &translate[0].x, -0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat3("Rotate", &rotate[0].x, -0.01f, 0.0f, 6.28f);
+				ImGui::DragFloat3("Scale", &scale[0].x, -0.01f, 1.0f, 10.0f);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Sphere2")) {
+				ImGui::DragFloat3("Translate", &translate[1].x, -0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat3("Rotate", &rotate[1].x, -0.01f, 0.0f, 6.28f);
+				ImGui::DragFloat3("Scale", &scale[1].x, -0.01f, 1.0f, 10.0f);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Sphere3")) {
+				ImGui::DragFloat3("Translate", &translate[2].x, -0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat3("Rotate", &rotate[2].x, -0.01f, 0.0f, 6.28f);
+				ImGui::DragFloat3("Scale", &scale[2].x, -0.01f, 1.0f, 10.0f);
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+		ImGui::End();
 
 		///-------------------///
 		/// ↑描画処理ここまで///
