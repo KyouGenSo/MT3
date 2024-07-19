@@ -25,16 +25,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool isStart = false;
 
-	Pendulum pendulum;
-	pendulum.anchor = Vector3(0.0f, 1.0f, 0.0f);
-	pendulum.length = 0.8f;
-	pendulum.angle = 0.9f;
-	pendulum.angularVelocity = 0.0f;
-	pendulum.angularAcceleration = 0.0f;
+	ConicalPendulum conicalPendulum;
+	conicalPendulum.anchor = Vector3(0.0f, 1.0f, 0.0f);
+	conicalPendulum.length = 0.8f;
+	conicalPendulum.halfApexAngle = 0.7f;
+	conicalPendulum.angle = 0.0f;
+	conicalPendulum.angularVelocity = 0.0f;
 
-	Sphere sphere;
-	sphere.center = Vector3(0.0f, 0.0f, 0.0f);
-	sphere.radius = 0.05f;
+	Sphere ball;
+	ball.center = Vector3(0.0f, 0.0f, 0.0f);
+	ball.radius = 0.05f;
 
 	Segment segment;
 
@@ -82,15 +82,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		if (isStart) {
-			pendulum.angularAcceleration = -(9.8f / pendulum.length) * sinf(pendulum.angle);
-			pendulum.angularVelocity += pendulum.angularAcceleration * kDeltaTime;
-			pendulum.angle += pendulum.angularVelocity * kDeltaTime;
+			conicalPendulum.angularVelocity = std::sqrt (9.8f / conicalPendulum.length * cosf(conicalPendulum.halfApexAngle));
+			conicalPendulum.angle += conicalPendulum.angularVelocity * kDeltaTime;
 		}
 
-		sphere.center = pendulum.anchor + Vector3(sinf(pendulum.angle) * pendulum.length, -cosf(pendulum.angle) * pendulum.length, 0.0f);
+		float radius = std::sin(conicalPendulum.halfApexAngle) * conicalPendulum.length;
+		float height = std::cos(conicalPendulum.halfApexAngle) * conicalPendulum.length;
+		ball.center.x = conicalPendulum.anchor.x + std::cos(conicalPendulum.angle) * radius;
+		ball.center.y = conicalPendulum.anchor.y - height;
+		ball.center.z = conicalPendulum.anchor.z + std::sin(conicalPendulum.angle) * radius;
 
-		segment.origin = pendulum.anchor;
-		segment.diff = sphere.center - pendulum.anchor;
+		segment.origin = conicalPendulum.anchor;
+		segment.diff = ball.center - conicalPendulum.anchor;
 
 		///-------------------///
 		/// ↑更新処理ここまで///
@@ -104,7 +107,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMtrix);
 
-		DrawSphere(sphere, viewProjectionMatrix, viewportMtrix, color1);
+		DrawSphere(ball, viewProjectionMatrix, viewportMtrix, color1);
 
 		DrawSegment(segment, viewProjectionMatrix, viewportMtrix, color1);
 
@@ -122,7 +125,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			isStart = false;
 		}
 		// angle
-		ImGui::DragFloat("angle", &pendulum.angle, 0.01f, -3.14f, 3.14f);
+		ImGui::DragFloat("angle", &conicalPendulum.angle, 0.01f, -3.14f, 3.14f);
+		// ApexAngle
+		ImGui::DragFloat("ApexAngle", &conicalPendulum.halfApexAngle, 0.01f, 0.0f, 3.14f);;
+		// Length
+		ImGui::DragFloat("Length", &conicalPendulum.length, 0.01f, 0.1f, 10.0f);
+
 		ImGui::End();
 
 		///-------------------///

@@ -40,6 +40,14 @@ struct Pendulum {
 	float angularAcceleration;
 };
 
+struct ConicalPendulum {
+	Vector3 anchor;
+	float length;
+	float halfApexAngle;
+	float angle;
+	float angularVelocity;
+};
+
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys);
 
 Vector3 Perpendicular(const Vector3& v);
