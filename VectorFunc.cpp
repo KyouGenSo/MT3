@@ -71,3 +71,7 @@ Vector3 Min(const Vector3& v1, const Vector3& v2) {
 Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
 	return Add(Multiply(v1, 1 - t), Multiply(v2, t));
 }
+
+Vector3 Reflect(const Vector3& input, const Vector3& normal) {
+	return input - Multiply(normal, 2 * Dot(input, normal));
+}

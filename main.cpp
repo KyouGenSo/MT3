@@ -25,20 +25,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool isStart = false;
 
-	ConicalPendulum conicalPendulum;
-	conicalPendulum.anchor = Vector3(0.0f, 1.0f, 0.0f);
-	conicalPendulum.length = 0.8f;
-	conicalPendulum.halfApexAngle = 0.7f;
-	conicalPendulum.angle = 0.0f;
-	conicalPendulum.angularVelocity = 0.0f;
-
-	Sphere ball;
-	ball.center = Vector3(0.0f, 0.0f, 0.0f);
+	MassPoint ball;
+	ball.position = Vector3(0.8f, 1.2f, 0.3f);
+	ball.velocity = Vector3(0.0f, 0.0f, 0.0f);
+	ball.acceleration = Vector3(0.0f, -9.8f, 0.0f);
+	ball.mass = 2.0f;
 	ball.radius = 0.05f;
+	ball.color = WHITE;
 
-	Segment segment;
+	Plane plane;
+	plane.normal = Vector3(-0.2f, 0.9f, -0.3f);
+	plane.distance = 0.0f;
 
-	int color1 = WHITE;
 
 	Vector3 gridScale(1.0f, 1.0f, 1.0f);
 	Vector3 gridRotate(0.0f, 0.0f, 0.0f);
@@ -80,20 +78,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		gridWorldMatrix = MakeAffineMatrix(gridScale, gridRotate, gridTranslate);
 		gridWVPMatrix = Multiply(gridWorldMatrix, viewProjectionMatrix);
 
-
 		if (isStart) {
-			conicalPendulum.angularVelocity = std::sqrt (9.8f / conicalPendulum.length * cosf(conicalPendulum.halfApexAngle));
-			conicalPendulum.angle += conicalPendulum.angularVelocity * kDeltaTime;
+			ball.velocity += ball.acceleration * kDeltaTime;
+			ball.position += ball.velocity * kDeltaTime;
+
+			if (IsCollision(Sphere{ ball.position, ball.radius }, plane)) {
+				ball.color = RED;
+				Vector3 reflected = Reflect(ball.velocity, plane.normal);
+				Vector3 projToNormal = Project(reflected, plane.normal);
+				Vector3 movingDirection = reflected - projToNormal;
+				float energyLoss = 0.9f;
+				ball.velocity = projToNormal * energyLoss + movingDirection;
+			} else {
+				ball.color = WHITE;
+			}
+		} else {
+			ball.position = Vector3(0.8f, 1.2f, 0.3f);
+			ball.velocity = Vector3(0.0f, 0.0f, 0.0f);
 		}
 
-		float radius = std::sin(conicalPendulum.halfApexAngle) * conicalPendulum.length;
-		float height = std::cos(conicalPendulum.halfApexAngle) * conicalPendulum.length;
-		ball.center.x = conicalPendulum.anchor.x + std::cos(conicalPendulum.angle) * radius;
-		ball.center.y = conicalPendulum.anchor.y - height;
-		ball.center.z = conicalPendulum.anchor.z + std::sin(conicalPendulum.angle) * radius;
 
-		segment.origin = conicalPendulum.anchor;
-		segment.diff = ball.center - conicalPendulum.anchor;
+
 
 		///-------------------///
 		/// ↑更新処理ここまで///
@@ -107,9 +112,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMtrix);
 
-		DrawSphere(ball, viewProjectionMatrix, viewportMtrix, color1);
+		DrawSphere(Sphere{ ball.position, ball.radius }, viewProjectionMatrix, viewportMtrix, ball.color);
 
-		DrawSegment(segment, viewProjectionMatrix, viewportMtrix, color1);
+		DrawPlane(plane, viewProjectionMatrix, viewportMtrix, WHITE);
 
 		ImGui::Begin("Grid");
 		ImGui::DragFloat3("Scale", &gridScale.x, -0.01f, 1.0f, 10.0f);
@@ -124,13 +129,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (ImGui::Button("Stop")) {
 			isStart = false;
 		}
-		// angle
-		ImGui::DragFloat("angle", &conicalPendulum.angle, 0.01f, -3.14f, 3.14f);
-		// ApexAngle
-		ImGui::DragFloat("ApexAngle", &conicalPendulum.halfApexAngle, 0.01f, 0.0f, 3.14f);;
-		// Length
-		ImGui::DragFloat("Length", &conicalPendulum.length, 0.01f, 0.1f, 10.0f);
-
+		// ball position
+		ImGui::DragFloat3("Position", &ball.position.x, -0.01f, -10.0f, 10.0f);
+		// plane normal
+		ImGui::DragFloat3("Normal", &plane.normal.x, -0.01f, -1.0f, 1.0f);
 		ImGui::End();
 
 		///-------------------///

@@ -268,6 +268,17 @@ bool IsCollision(const Sphere& sphere, const Plane& plane) {
 	}
 }
 
+bool IsCollision(const Capusle& capusle, const Plane& plane) {
+	float distance1 = Dot(capusle.start, plane.normal) - plane.distance;
+	float distance2 = Dot(capusle.end, plane.normal) - plane.distance;
+
+	if (distance1 * distance2 < 0.0f) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 bool IsCollision(const Segment& segment, const Plane& plane) {
 	float dot = Dot(plane.normal, segment.diff);
 

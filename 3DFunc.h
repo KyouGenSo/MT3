@@ -32,6 +32,22 @@ struct OBB {
 	Vector3 size;
 };
 
+struct MassPoint {
+	Vector3 position;
+	Vector3 velocity;
+	Vector3 acceleration;
+	float mass;
+	float radius;
+	unsigned int color;
+};
+
+struct Spring {
+	Vector3 anchor;
+	float natrualLength;
+	float stiffness;
+	float damping;
+};
+
 struct Pendulum {
 	Vector3 anchor;
 	float length;
@@ -46,6 +62,12 @@ struct ConicalPendulum {
 	float halfApexAngle;
 	float angle;
 	float angularVelocity;
+};
+
+struct Capusle {
+	Vector3 start;
+	Vector3 end;
+	float radius;
 };
 
 void CameraControl(Vector3& cameraPosition, Vector3& cameraRotation, float moveSpeed, float rotateSpeed, const char* keys);
@@ -79,6 +101,8 @@ void DrawBezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, const M
 bool IsCollision(const Sphere& sphere1, const Sphere& sphere2);
 
 bool IsCollision(const Sphere& sphere, const Plane& plane);
+
+bool IsCollision(const Capusle& capusle, const Plane& plane);
 
 bool IsCollision(const Segment& segment, const Plane& plane);
 
